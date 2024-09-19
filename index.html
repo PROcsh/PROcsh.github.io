@@ -244,50 +244,27 @@
         <button type="submit">제출 및 저장</button>
     </form>
 
-    <div class="divider"></div>
-
     <div id="savedData">
-        <h2>탐방객 안전사고 처리 현황 저장 내용</h2>
-        <div id="dataDisplay"></div>
-        <a id="downloadLink" style="display:none;">다운로드</a>
+        <h2>탐방객 안전사고 처리 현황 저장 데이터</h2>
+        <div id="dataContent"></div>
     </div>
 </div>
 
 <script>
-    document.getElementById('incidentForm').onsubmit = function(event) {
+    document.getElementById('incidentForm').addEventListener('submit', function(event) {
         event.preventDefault(); // 기본 제출 동작 방지
-        
-        const formData = new FormData(event.target);
-        let csvContent = "data:text/csv;charset=utf-8,"; // CSV 파일의 헤더
-        let headers = Array.from(formData.keys()).join(",") + "\n"; // 헤더 생성
-        csvContent += headers; // 헤더를 CSV 내용에 추가
-        
-        let row = [];
-        for (let [key, value] of formData.entries()) {
-            row.push(value || ""); // 값이 없으면 빈 문자열로 대체
-        }
-        csvContent += row.join(",") + "\n"; // 데이터를 CSV 내용에 추가
 
-        // 데이터 표시
-        let dataDisplay = "<ul>";
-        for (let [key, value] of formData.entries()) {
-            dataDisplay += `<li><strong>${key}:</strong> ${value || "빈 값"}</li>`; // 값이 없으면 '빈 값' 표시
+        const formData = new FormData(this);
+        let output = '<ul>';
+        for (const [key, value] of formData.entries()) {
+            output += `<li><strong>${key}:</strong> ${value}</li>`;
         }
-        dataDisplay += "</ul>";
+        output += '</ul>';
 
-        document.getElementById('dataDisplay').innerHTML = dataDisplay;
+        document.getElementById('dataContent').innerHTML = output;
         document.getElementById('savedData').style.display = 'block';
-
-        // Blob을 사용하여 파일로 저장
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        
-        const downloadLink = document.getElementById('downloadLink');
-        downloadLink.href = url;
-        downloadLink.download = 'incident_report.csv'; // 저장할 파일 이름
-        downloadLink.innerText = '다운로드하기';
-        downloadLink.style.display = 'block';
-    };
+        this.reset(); // 폼 초기화
+    });
 </script>
 
 </body>
