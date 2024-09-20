@@ -246,9 +246,9 @@
         
         for (const [key, value] of Object.entries(data)) {
             if (["사고일시", "출동시간", "도착시간", "완료시간", "위도", "경도", "사고장소", "부상유형", "사고경위", "병원이송여부"].includes(key)) {
-                dataHtml += `<strong class="highlight">${key}:</strong> ${value}<br>`;
+                dataHtml += `<strong class="highlight">${key}:</strong> ${value || '없음'}<br>`;
             } else {
-                dataHtml += `${key}: ${value}<br>`;
+                dataHtml += `${key}: ${value || '없음'}<br>`;
             }
         }
         
@@ -256,7 +256,7 @@
         savedDataDiv.style.display = 'block';
 
         // Prepare text file
-        const textFile = new Blob([JSON.stringify(data, null, 2)], { type: 'text/plain' });
+        const textFile = new Blob([Object.entries(data).map(([key, value]) => `${key}: ${value || '없음'}`).join('\n')], { type: 'text/plain' });
         const textUrl = URL.createObjectURL(textFile);
         const downloadTextLink = document.getElementById('downloadText');
         downloadTextLink.href = textUrl;
@@ -264,7 +264,7 @@
         downloadTextLink.style.display = 'block';
 
         // Prepare CSV file
-        const csvData = Object.entries(data).map(([key, value]) => `${key},${value}`).join('\n');
+        const csvData = Object.entries(data).map(([key, value]) => `${key},${value || '없음'}`).join('\n');
         const csvFile = new Blob([csvData], { type: 'text/csv' });
         const csvUrl = URL.createObjectURL(csvFile);
         const downloadExcelLink = document.getElementById('downloadExcel');
