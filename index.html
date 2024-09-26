@@ -225,46 +225,11 @@
     </form>
     
 <!-- 지도 표시 섹션 -->
-<h4> 🚩 Map </h4>
-   
+<h4> 🚩 Map </h4>   
     <div id="map"></div>
     <!-- 내위치 button 원래 위치-->
     <script>
-        const memos = [];
-
-        function saveMemo() {
-            const memo = document.getElementById('memo').value;
-            if (memo) {
-                const timestamp = new Date().toLocaleString();
-                const memoWithTimestamp = `${timestamp}: ${memo}`;
-                memos.push(memoWithTimestamp);
-                const savedMemosDiv = document.getElementById('savedMemos');
-                const memoElement = document.createElement('div');
-                memoElement.textContent = memoWithTimestamp;
-                savedMemosDiv.appendChild(memoElement);
-                document.getElementById('memo').value = '';
-            } else {
-                alert('메모를 입력해주세요.');
-            }
-        }
-
-        function clearMemo() {
-            document.getElementById('memo').value = '';
-        }
-
-        function downloadMemos() {
-            const blob = new Blob([memos.join('\n')], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'memos.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        document.getElementById('getLocation').addEventListener('click', function() {
+       document.getElementById('getLocation').addEventListener('click', function() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(showPosition, showError);
             } else {
@@ -310,6 +275,8 @@
     <div id="savedData">
         <h2>탐방객 안전사고 처리 현황 저장 데이터</h2>
         <div id="dataContent"></div>
+        <h4> 🚩 Map </h4>    
+        <div id="map"></div>
         <br>
         <a id="downloadExcel" style="display: none;">엑셀 파일 다운로드</a><br>
         <a id="downloadText" style="display: none;">텍스트 파일 다운로드</a><br>
