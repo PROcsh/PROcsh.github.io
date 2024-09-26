@@ -242,13 +242,15 @@
     <div id="map"></div>
     <!-- 내위치 button 원래 위치-->
     <script>
-       document.getElementById('getLocation').addEventListener('click', function() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
-            } else {
-                alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
-            }
-        });
+       document.getElementById('getLocation').addEventListener('click', function(event) {
+    event.preventDefault(); // 기본 동작 방지
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else {
+        alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
+    }
+});
+
 
         function showPosition(position) {
             const lat = position.coords.latitude;
