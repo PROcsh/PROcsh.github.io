@@ -219,8 +219,12 @@
                 <th>특이사항</th>
                 <td><textarea name="특이사항" rows="4"></textarea></td>
             </tr>
-        </table>
-        <button type="submit">제출 및 저장</button> <button id="getLocation">내 위치 확인</button>
+        </table>    
+    </form>
+
+        <form id="locationForm">
+        <button type="button" id="getLocation">내 위치 확인</button>
+        <div id="map" style="width: 100%; height: 400px; margin-top: 10px;"></div>
     </form>
     
 <!-- 탐방객 안전사고 처리 현황 저장 데이터 표시 섹션 -->
