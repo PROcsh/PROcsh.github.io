@@ -90,89 +90,6 @@
     </style>
 </head>
 <body>
-
-<!-- 지도 표시 섹션 -->
-<h4> 🚩 Map </h4>
-    <button id="getLocation">내 위치 확인</button>
-    <div id="map"></div>
-    
-    <script>
-        const memos = [];
-
-        function saveMemo() {
-            const memo = document.getElementById('memo').value;
-            if (memo) {
-                const timestamp = new Date().toLocaleString();
-                const memoWithTimestamp = `${timestamp}: ${memo}`;
-                memos.push(memoWithTimestamp);
-                const savedMemosDiv = document.getElementById('savedMemos');
-                const memoElement = document.createElement('div');
-                memoElement.textContent = memoWithTimestamp;
-                savedMemosDiv.appendChild(memoElement);
-                document.getElementById('memo').value = '';
-            } else {
-                alert('메모를 입력해주세요.');
-            }
-        }
-
-        function clearMemo() {
-            document.getElementById('memo').value = '';
-        }
-
-        function downloadMemos() {
-            const blob = new Blob([memos.join('\n')], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'memos.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        document.getElementById('getLocation').addEventListener('click', function() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
-            } else {
-                alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
-            }
-        });
-
-        function showPosition(position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-
-            const mapOptions = {
-                center: new naver.maps.LatLng(lat, lon),
-                zoom: 15
-            };
-
-            const map = new naver.maps.Map('map', mapOptions);
-            new naver.maps.Marker({
-                position: new naver.maps.LatLng(lat, lon),
-                map: map
-            });
-        }
-
-        function showError(error) {
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    alert("사용자가 위치 정보를 허용하지 않았습니다.");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert("위치 정보를 사용할 수 없습니다.");
-                    break;
-                case error.TIMEOUT:
-                    alert("위치 정보 요청이 시간 초과되었습니다.");
-                    break;
-                case error.UNKNOWN_ERROR:
-                    alert("알 수 없는 오류가 발생했습니다.");
-                    break;
-            }
-        }
-    </script>
-    
     
 <!-- 탐방객 안전사고 처리 본문 표시 섹션 -->
 <h1>탐방객 안전사고 처리 현황</h1>
@@ -301,7 +218,90 @@
         </table>
         <button type="submit">제출 및 저장</button>
     </form>
+    
+<!-- 지도 표시 섹션 -->
+<h4> 🚩 Map </h4>
+    <button id="getLocation">내 위치 확인</button>
+    <div id="map"></div>
+    
+    <script>
+        const memos = [];
 
+        function saveMemo() {
+            const memo = document.getElementById('memo').value;
+            if (memo) {
+                const timestamp = new Date().toLocaleString();
+                const memoWithTimestamp = `${timestamp}: ${memo}`;
+                memos.push(memoWithTimestamp);
+                const savedMemosDiv = document.getElementById('savedMemos');
+                const memoElement = document.createElement('div');
+                memoElement.textContent = memoWithTimestamp;
+                savedMemosDiv.appendChild(memoElement);
+                document.getElementById('memo').value = '';
+            } else {
+                alert('메모를 입력해주세요.');
+            }
+        }
+
+        function clearMemo() {
+            document.getElementById('memo').value = '';
+        }
+
+        function downloadMemos() {
+            const blob = new Blob([memos.join('\n')], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'memos.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('getLocation').addEventListener('click', function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
+            }
+        });
+
+        function showPosition(position) {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+
+            const mapOptions = {
+                center: new naver.maps.LatLng(lat, lon),
+                zoom: 15
+            };
+
+            const map = new naver.maps.Map('map', mapOptions);
+            new naver.maps.Marker({
+                position: new naver.maps.LatLng(lat, lon),
+                map: map
+            });
+        }
+
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("사용자가 위치 정보를 허용하지 않았습니다.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("위치 정보를 사용할 수 없습니다.");
+                    break;
+                case error.TIMEOUT:
+                    alert("위치 정보 요청이 시간 초과되었습니다.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("알 수 없는 오류가 발생했습니다.");
+                    break;
+            }
+        }
+    </script>
+
+    <!-- 탐방객 안전사고 처리 현황 저장 데이터 표시 섹션 -->
     <div id="savedData">
         <h2>탐방객 안전사고 처리 현황 저장 데이터</h2>
         <div id="dataContent"></div>
