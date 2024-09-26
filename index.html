@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> 📌 탐방객 안전사고 처리 현황 </title>
-    <style>
+<style>
         body {
             font-family: 'Arial', sans-serif;
             margin: 20px;
@@ -102,13 +102,14 @@
     <form id="incidentForm">
         <table>
             <tr>
-                <th>사고일시</th>
-                <td><input type="datetime-local" name="사고일시"></td>
+                <th>사고일시</th>                
+                <td><input type="datetime-local" id="accidentDateTime" name="사고일시"></td>
             </tr>
             <tr>
                 <th>사고발생 접수경로</th>
                 <td>
                     <select name="접수경로">
+                        <option value="선택">선택</option> 
                         <option value="119상황전파">119상황전파</option>
                         <option value="사무소전화접수">사무소전화접수</option>
                         <option value="현장접수">현장접수</option>
@@ -117,15 +118,15 @@
             </tr>
             <tr>
                 <th>출동시간</th>
-                <td><input type="text" name="출동시간" placeholder="HH:MM" pattern="^(2[0-3]|[01]?[0-9]):[0-5][0-9]$"></td>
+                <td><input type="datetime-local" id="dispatchDateTime" name="출동시간"></td>
             </tr>
             <tr>
                 <th>도착시간</th>
-                <td><input type="text" name="도착시간" placeholder="HH:MM" pattern="^(2[0-3]|[01]?[0-9]):[0-5][0-9]$"></td>
+                <td><input type="datetime-local" id="arrivalDateTime" name="도착시간"></td>
             </tr>
             <tr>
                 <th>완료시간</th>
-                <td><input type="text" name="완료시간" placeholder="HH:MM" pattern="^(2[0-3]|[01]?[0-9]):[0-5][0-9]$"></td>
+                <td><input type="datetime-local" id="completionDateTime" name="완료시간"></td>
             </tr>
             <tr>
                 <th>출동거리</th>
@@ -134,24 +135,35 @@
             <tr>
                 <th>사고장소</th>
                 <td><input type="text" name="사고장소"></td>
-            </tr>
+            </tr>            
             <tr>
-                <th>위도</th>
-                <td><input type="text" id="latitude" name="위도" readonly></td>                
-            </tr>
-            <tr>
-                <th>경도</th>
-                <td><input type="text" id="longitude" name="경도" readonly></td>               
+                <th>지도좌표</th>
+                <td>
+                  위도: <input type="text" id="latitude" name="위도" readonly>
+                  <br>
+                  경도: <input type="text" id="longitude" name="경도" readonly>                    
+                </td>               
             </tr>
             <tr>
                 <th>장소구분</th>
-                <td><input type="text" name="장소구분"></td>
+                <td> 
+                   장소:<input type="text" name="장소구분">
+                   <select name="탐방로">
+                       <option value="선택">선택</option>                       
+                       <option value="탐방로">탐방로</option>
+                       <option value="비법정 탐방로">비법정 탐방로</option>
+                       <option value="등반">등반</option>
+                       <option value="릿지">릿지</option>
+                       <option value="공원외">공원외</option>
+                   </select><br>
+                </td>
             </tr>
             <tr>
                 <th>신고자 인적사항</th>
                 <td>
                     성명: <input type="text" name="신고자성명"><br>
                     성별: <select name="신고자성별">
+                        <option value="선택">선택</option>
                         <option value="남">남</option>
                         <option value="여">여</option>
                         <option value="미상">미상</option>
@@ -164,6 +176,7 @@
                 <td>
                     성명: <input type="text" name="사고자성명"><br>
                     성별: <select name="사고자성별">
+                        <option value="선택">선택</option>
                         <option value="남">남</option>
                         <option value="여">여</option>
                         <option value="미상">미상</option>
@@ -175,7 +188,23 @@
             </tr>
             <tr>
                 <th>사고원인</th>
-                <td><input type="text" name="사고원인"></td>
+                <td>
+                    원인:<input type="text" name="사고원인">
+                    <select name="사고원인상세">
+                        <option value="선택">선택</option>  
+                        <option value="부주의">추락</option>
+                        <option value="무리한">지병</option>
+                        <option value="골절">골절</option>
+                        <option value="상처">상처</option>
+                        <option value="통증호소">탈진</option>
+                        <option value="탈진">탈진</option>  
+                        <option value="지병">지병</option>
+                        <option value="추락">추락</option>
+                        <option value="조난/고립">조난/고립</option>  
+                        <option value="독충/위해동물">독충/위해동물</option>  
+                        <option value="자연재해">자연재해</option>  
+                    </select>
+                </td>
             </tr>
             <tr>
                 <th>부상유형</th>
@@ -190,6 +219,10 @@
                 <td><textarea name="조치내용" rows="4"></textarea></td>
             </tr>
             <tr>
+                <th>응급처치</th>                            
+                <td><textarea name="응급처치" rows="4"></textarea></td>
+            </tr>
+            <tr>
                 <th>동원인원</th>
                 <td><input type="text" name="동원인원"></td>
             </tr>
@@ -201,6 +234,7 @@
                 <th>병원이송</th>
                 <td>
                     <select name="병원이송여부">
+                        <option value="선택">선택</option>
                         <option value="예">예</option>
                         <option value="아니오">아니오</option>
                     </select>
@@ -210,6 +244,7 @@
                 <th>음주여부</th>
                 <td>
                     <select name="음주여부">
+                        <option value="선택">선택</option>
                         <option value="아니오">아니오</option>
                         <option value="예">예</option>
                     </select>
@@ -224,15 +259,13 @@
     </form>
     
 <!-- 지도 버튼 표시 섹션 -->
-        <form id="locationForm">
+    <form id="locationForm">
         <button type="button" id="getLocation">내 위치 확인</button>
         <div id="map" style="width: 100%; height: 400px; margin-top: 10px;"></div>
-        <div>
-</div>
     </form>
 
 <!-- 탐방객 안전사고 처리 현황 저장 데이터 표시 섹션 -->
-    <div id="savedData">
+    <div id="savedData" style="display: none;">
         <h2>탐방객 안전사고 처리 현황 저장 데이터</h2>
         <div id="dataContent"></div>
         <br>
@@ -242,58 +275,9 @@
         <h4> [공지] 페이지 새로고침 하면 저장 데이터는 사라짐. 개인 폰 및 컴퓨터에 저장 바람니다.</h4>
     </div>
     
-<!-- 지도 표시 섹션 -->
-    <div id="map"></div>  
-    <script>
-       document.getElementById('getLocation').addEventListener('click', function(event) {
-       event.preventDefault(); // 기본 동작 방지
-        if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition, showError);
-      } else {
-        alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
-      }
-           });
-
-        function showPosition(position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-
-            const mapOptions = {
-                center: new naver.maps.LatLng(lat, lon),
-                zoom: 15
-            };
-
-            const map = new naver.maps.Map('map', mapOptions);
-            new naver.maps.Marker({
-                position: new naver.maps.LatLng(lat, lon),
-                map: map
-            });
-        }
-
-        function showError(error) {
-            switch(error.code) {
-                case error.PERMISSION_DENIED:
-                    alert("사용자가 위치 정보를 허용하지 않았습니다.");
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    alert("위치 정보를 사용할 수 없습니다.");
-                    break;
-                case error.TIMEOUT:
-                    alert("위치 정보 요청이 시간 초과되었습니다.");
-                    break;
-                case error.UNKNOWN_ERROR:
-                    alert("알 수 없는 오류가 발생했습니다.");
-                    break;
-            }
-        }
-    </script>
-
-    
-</div>
-
 <script>
     document.getElementById('getLocation').addEventListener('click', function(event) {
-        event.preventDefault(); // 기본 동작 방지
+        event.preventDefault();
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(showPosition, showError);
         } else {
@@ -337,9 +321,7 @@
                 break;
         }
     }
-</script>
 
-<script>
     document.getElementById('incidentForm').addEventListener('submit', function(event) {
         event.preventDefault();
         
@@ -349,7 +331,6 @@
             data[key] = value;
         });
         
-        // Display the saved data without {}
         const savedDataDiv = document.getElementById('savedData');
         const dataContent = document.getElementById('dataContent');
         let dataHtml = '';
@@ -382,8 +363,14 @@
         downloadExcelLink.download = 'incident_data.csv';
         downloadExcelLink.style.display = 'block';
     });
-</script>
 
-  
+    // Set default datetime
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+    const formatted = now.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM"
+    document.getElementById('accidentDateTime').value = formatted;
+</script>  
+
+</div>
+
 </body>
 </html>
