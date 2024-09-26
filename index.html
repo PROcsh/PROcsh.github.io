@@ -222,7 +222,8 @@
         </table>
         <button type="submit">제출 및 저장</button>
     </form>
-
+    
+<!-- 지도 버튼 표시 섹션 -->
         <form id="locationForm">
         <button type="button" id="getLocation">내 위치 확인</button>
         <div id="map" style="width: 100%; height: 400px; margin-top: 10px;"></div>
@@ -240,18 +241,16 @@
     </div>
     
 <!-- 지도 표시 섹션 -->
-    <div id="map"></div>
-    <!-- 내위치 button 원래 위치-->
+    <div id="map"></div>  
     <script>
        document.getElementById('getLocation').addEventListener('click', function(event) {
-    event.preventDefault(); // 기본 동작 방지
-    if (navigator.geolocation) {
+       event.preventDefault(); // 기본 동작 방지
+        if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition, showError);
-    } else {
+      } else {
         alert("이 브라우저는 위치 정보를 지원하지 않습니다.");
-    }
-});
-
+      }
+           });
 
         function showPosition(position) {
             const lat = position.coords.latitude;
