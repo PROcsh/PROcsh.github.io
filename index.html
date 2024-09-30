@@ -271,13 +271,11 @@
         <div id="dataContent"></div>
         <br>
         <a id="downloadExcel" style="display: none;">엑셀 파일 다운로드</a><br>
-        <a id="downloadText" style="display: none;">텍스트 파일 다운로드</a><br>
-              
-        <h4> [공지] 페이지 새로고침 하면 저장 데이터는 사라짐. 개인 폰 및 컴퓨터에 저장 바람니다.</h4>
-<h5> 🐸 Beta Ver. 0.9.26. 국립공원 응급처치 연구회. E-mail: paramedic@knps.or.kr. </h5>
-
+        <a id="downloadText" style="display: none;">텍스트 파일 다운로드</a><br> 
     </div>
-    
+
+
+ <!-- 탐방객 안전사고 처리 현황 저장 데이터 표시 섹션 -->   
 <script>
     document.getElementById('getLocation').addEventListener('click', function(event) {
         event.preventDefault();
@@ -373,7 +371,38 @@
     document.getElementById('accidentDateTime').value = formatted;
 </script>  
 
-</div>
+<!-- 탐방객 안전사고 처리 현황 저장 공지 게시판 표시 섹션 -->
+<h4> [공지] 페이지 새로고침 하면 저장 데이터는 사라짐. 개인 폰 및 컴퓨터에 저장 바람니다.</h4>
+<h5> 🐸 Beta Ver. 0.9.26. 국립공원 응급처치 연구회. E-mail: paramedic@knps.or.kr. </h5>    
 
+  <title>Discord 초대 링크</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .discord-link {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        a {
+            text-decoration: none;
+            color: #7289DA; /* Discord 블루 색상 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Discord 초대 링크</h2>
+<div class="discord-link">
+    <p>아래의 링크를 클릭하여 Discord 서버에 참여하세요:</p>
+    <a href="https://discord.gg/ryaMRTAhwP" target="_blank">Discord 서버 초대 링크</a>
+</div>
+    
 </body>
 </html>
