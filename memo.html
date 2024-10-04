@@ -92,7 +92,7 @@
 <div class="coordinate-box" id="locationDisplay">위도: , 경도: </div>
 <div class="coordinate-box" id="dmsCoordinates">도분초: </div>
   
-<div id="myLocation" class="info">🗺️ Map Location</div>
+<div id="myLocation" class="info">📍 Map Location</div>
 
 <div id="map"></div> <!-- 지도 컨테이너 -->
 
@@ -104,7 +104,7 @@
 <label for="otherLongitude">좌표 경도:</label>
 <input type="text" id="otherLongitude" placeholder="상대방 경도 입력" required><br><br>
 <button id="showLocations" onclick="showLocations()">대상 위치 보기</button>
-<div id="myLocation" class="info">🗺️ Map Location</div>
+<div id="myLocation" class="info">📍 Map Location</div>
 <div id="distanceInfo" class="info"></div>
 <div id="mapComparison" class="map"></div> <!-- 상대 위치 지도 컨테이너 -->
 
@@ -185,7 +185,7 @@
     const utmY = Math.floor(utmK[1]);
 
     // 메모에 변환된 좌표 입력
-    document.getElementById('memo').value = `지도 좌표: ${latitude}, ${longitude} (UTM-K: X=${utmX}, Y=${utmY})`;
+    document.getElementById('memo').value = `내 위치 좌표: ${latitude}, ${longitude} (UTM-K: X=${utmX}, Y=${utmY})`;
 
     const dmsCoordinates = convertToDMS(latitude, longitude);
     document.getElementById('dmsCoordinates').textContent = `도분초: ${dmsCoordinates}`;
@@ -333,7 +333,7 @@
     </select>
     <br>
     <button id="convert">변환하기</button>
-    <h4>🚩 변환 결과</h4>
+    <h4>ℹ️ 변환 결과</h4>
     <p id="result"></p>
 
     <script>
@@ -393,6 +393,8 @@
         });
             
     </script>
+
+<br>
     
    <!-- UTM-K to WGS84 변환 섹션 -->
 <h3>🌐 국가지점번호 좌표변환</h3>
@@ -407,7 +409,7 @@
 북향값 13:가, 14:나, 15:다, 16:라, 17:마, 18:바, 19:사, 20:아  
 <br>
 <button id="convertToWGS84">변환하기</button>
-<h4>🚩 변환 결과</h4>
+<h4>ℹ️ 변환 결과</h4>
 <p id="wgs84Result"></p>
 
 <script>
@@ -430,6 +432,8 @@
    </body>
 </html>
 
+    <br>
+    
     <!--네트워크 종류확인-->
     <h3></h3>
 <p id="network-status">❗ 네트워크 상태를 확인 중...</p>
