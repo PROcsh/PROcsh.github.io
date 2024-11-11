@@ -157,8 +157,7 @@
                 <th>날짜</th>
                 <th>근무 시간</th>
                 <th>근무자</th>
-                <th>비고</th>
-                <th>다운로드 날짜</th>
+                <th>근무유형</th>
                 <th>삭제</th>
             </tr>
         </thead>
@@ -167,9 +166,8 @@
 
     <!-- 근무자 추가 폼 -->
     <form id="workerForm">
-        <!-- 날짜, 시작시간, 종료시간 한 줄로 배치 -->
         <div class="form-row">
-            <h2>근무표 입력</h2>
+            <h2>근무 입력</h2>
             <div class="half">
                 <label for="date">날짜:</label>
                 <input type="date" id="date" required>
@@ -183,23 +181,21 @@
                 <input type="time" id="endTime" required>
            </div>
 
-        <!-- 근무자 및 비고 입력 -->
-       
             <div class="half">
                 <label for="name">근무자:</label>
                 <input type="text" id="name" placeholder="이름" required>
            </div>
             <div class="half">
-                <label for="remarks">비고:</label>
+                <label for="remarks">근무유형:</label>
                 <input type="text" id="remarks" placeholder="비고">
               </div>
              
-        <div class="button-group">
-            <button type="button" onclick="addWorker()">추가</button>
-            <button type="button" onclick="saveToExcel()">파일저장</button>
-            <button type="button" onclick="shareLink()">공유</button>
-         </div>
-          </div>
+            <div class="button-group">
+                <button type="button" onclick="addWorker()">추가</button>
+                <button type="button" onclick="saveToExcel()">파일저장</button>
+                <button type="button" onclick="shareLink()">공유</button>
+            </div>
+        </div>
     </form>
 </div>
 
@@ -208,6 +204,7 @@
     let db;
     const dbName = 'workerDB';
     const dbVersion = 1;
+    let deletedWorkers = [];  // 삭제된 근무자들을 추적하는 배열
 
     // IndexedDB 연결
     function openDB() {
@@ -247,7 +244,7 @@
         const startTime = document.getElementById("startTime").value;
         const endTime = document.getElementById("endTime").value;
         const name = document.getElementById("name").value;
-        const remarks = document.getElementById("remarks").value; // () 제거
+        const remarks = document.getElementById("remarks").value;
 
         if (!date || !startTime || !endTime || !name) {
             alert("모든 필수 정보를 입력해주세요.");
@@ -280,12 +277,13 @@
         const tableBody = document.getElementById('workerTable');
         const row = document.createElement('tr');
 
+        row.dataset.id = worker.id;  // ID를 데이터 속성으로 저장
+
         row.innerHTML = `
             <td>${worker.date}</td>
             <td>${worker.workTime}</td>
             <td>${worker.name}</td>
             <td>${worker.remarks}</td>
-            <td>${worker.downloadDate}</td>
             <td><button onclick="deleteWorker(${worker.id})">삭제</button></td>
         `;
 
@@ -298,16 +296,41 @@
         const store = transaction.objectStore('workers');
         store.delete(id);
 
+        // 삭제된 근무자 추가
+        deletedWorkers.push(id);
+
         // 삭제 후 테이블에서 해당 행 제거
-        const row = document.querySelector(`button[onclick="deleteWorker(${id})"]`).closest('tr');
+        const row = document.querySelector(`tr[data-id="${id}"]`);
         row.remove();
     }
 
     // 엑셀로 저장
     function saveToExcel() {
         const today = new Date().toISOString().split('T')[0];
-        const table = document.querySelector('table');
-        const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+        const workers = [];
+
+        // 테이블의 모든 행을 가져오되, 삭제된 항목 제외
+        const rows = document.querySelectorAll('#workerTable tr');
+        rows.forEach(row => {
+            const workerId = row.dataset.id;
+
+            // 삭제되지 않은 근무자만 추가
+            if (!deletedWorkers.includes(Number(workerId))) {
+                const cells = row.querySelectorAll('td');
+                const worker = {
+                    날짜: cells[0].innerText,
+                    근무시간: cells[1].innerText,
+                    이름: cells[2].innerText,
+                    근무유형: cells[3].innerText,
+                    저장시간: new Date().toLocaleDateString(),
+                };
+                workers.push(worker);
+            }
+        });
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(workers);
+        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
         XLSX.writeFile(wb, `근무표_${today}.xlsx`);
     }
 
