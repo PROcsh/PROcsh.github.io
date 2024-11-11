@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>근무표</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>근무표</h2>
+
+<!-- 근무자 추가 폼 -->
+<form id="workerForm">
+    <label for="date">날짜:</label>
+    <input type="date" id="date" required>
+    
+    <label for="time">근무 시간:</label>
+    <input type="text" id="time" placeholder="예: 09:00 - 18:00" required>
+    
+    <label for="name">근무자:</label>
+    <input type="text" id="name" placeholder="이름" required>
+    
+    <label for="remarks">비고:</label>
+    <input type="text" id="remarks" placeholder="비고">
+    
+    <button type="button" onclick="addWorker()">추가</button>
+</form>
+
+<!-- 근무표 테이블 -->
+<table>
+    <thead>
+        <tr>
+            <th>날짜</th>
+            <th>근무 시간</th>
+            <th>근무자</th>
+            <th>비고</th>
+            <th>삭제</th>
+        </tr>
+    </thead>
+    <tbody id="workerTable">
+        <tr>
+            <td>2024-11-01</td>
+            <td>09:00 - 18:00</td>
+            <td>김철수</td>
+            <td>주간 근무</td>
+            <td><button onclick="deleteRow(this)">삭제</button></td>
+        </tr>
+        <tr>
+            <td>2024-11-01</td>
+            <td>18:00 - 03:00</td>
+            <td>박영희</td>
+            <td>야간 근무</td>
+            <td><button onclick="deleteRow(this)">삭제</button></td>
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    function addWorker() {
+        // 폼 입력값 가져오기
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
+        const name = document.getElementById("name").value;
+        const remarks = document.getElementById("remarks").value;
+
+        // 입력값이 없을 경우 경고
+        if (!date || !time || !name) {
+            alert("모든 필수 정보를 입력해주세요.");
+            return;
+        }
+
+        // 테이블 행 추가
+        const table = document.getElementById("workerTable");
+        const row = table.insertRow();
+        
+        row.insertCell(0).innerText = date;
+        row.insertCell(1).innerText = time;
+        row.insertCell(2).innerText = name;
+        row.insertCell(3).innerText = remarks;
+        row.insertCell(4).innerHTML = '<button onclick="deleteRow(this)">삭제</button>';
+
+        // 폼 초기화
+        document.getElementById("workerForm").reset();
+    }
+
+    function deleteRow(button) {
+        // 선택한 행 삭제
+        const row = button.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+</script>
+
+</body>
+</html>
