@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>산불 일일상황 근무표</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            color: #333;
+        }
+
+        h2 {
+            text-align: center;
+            color: #4a90e2;
+            margin-top: 20px;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+            justify-content: space-between;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 14px 20px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: #f4f7fa;
+            font-weight: 500;
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        td button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        td button:hover {
+            background-color: #c0392b;
+        }
+
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: auto;
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .form-row label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-row input {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-row input:focus {
+            border-color: #4a90e2;
+        }
+
+        .form-row .half-width {
+            width: 32%;
+        }
+
+        form button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 12px 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        form button:hover {
+            background-color: #357ab7;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>산불 일일상황 근무표</h2>
+
+    <!-- 근무표 테이블 -->
+    <table>
+        <thead>
+            <tr>
+                <th>날짜</th>
+                <th>근무 시간</th>
+                <th>근무자</th>
+                <th>근무유형</th>
+                <th>삭제</th>
+            </tr>
+        </thead>
+        <tbody id="workerTable"></tbody>
+    </table>
+
+    <!-- 근무자 추가 폼 -->
+    <form id="workerForm">
+        <div class="form-row">
+            <h2>근무 입력</h2>
+            <div class="half">
+                <label for="date">날짜:</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="half">
+                <label for="startTime">시작 시간:</label>
+                <input type="time" id="startTime" required>
+            </div>
+            <div class="half">
+                <label for="endTime">종료 시간:</label>
+                <input type="time" id="endTime" required>
+           </div>
+
+            <div class="half">
+                <label for="name">근무자:</label>
+                <input type="text" id="name" placeholder="이름" required>
+           </div>
+            <div class="half">
+                <label for="remarks">근무유형:</label>
+                <input type="text" id="remarks" placeholder="비고">
+              </div>
+             
+            <div class="button-group">
+                <button type="button" onclick="addWorker()">추가</button>
+                <button type="button" onclick="saveToExcel()">파일저장</button>
+                <button type="button" onclick="shareLink()">공유</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
+<script>
+    let db;
+    const dbName = 'workerDB';
+    const dbVersion = 1;
+    let deletedWorkers = [];  // 삭제된 근무자들을 추적하는 배열
+
+    // IndexedDB 연결
+    function openDB() {
+        const request = indexedDB.open(dbName, dbVersion);
+        request.onupgradeneeded = function (event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('workers')) {
+                db.createObjectStore('workers', { keyPath: 'id', autoIncrement: true });
+            }
+        };
+
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            loadDataFromDB();
+        };
+
+        request.onerror = function (event) {
+            console.error("DB 연결 실패:", event.target.error);
+        };
+    }
+
+    // DB에서 데이터 불러오기
+    function loadDataFromDB() {
+        const transaction = db.transaction(['workers'], 'readonly');
+        const store = transaction.objectStore('workers');
+        const request = store.getAll();
+
+        request.onsuccess = function (event) {
+            const workers = event.target.result;
+            workers.forEach(worker => addRowToTable(worker));
+        };
+    }
+
+    // 근무자 추가
+    function addWorker() {
+        const date = document.getElementById("date").value;
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
+        const name = document.getElementById("name").value;
+        const remarks = document.getElementById("remarks").value;
+
+        if (!date || !startTime || !endTime || !name) {
+            alert("모든 필수 정보를 입력해주세요.");
+            return;
+        }
+
+        const workTime = `${startTime} - ${endTime}`;
+        const downloadDate = new Date().toLocaleDateString();
+        const worker = { date, workTime, name, remarks, downloadDate };
+
+        // IndexedDB에 저장
+        saveToDB(worker);
+
+        // 테이블에 추가
+        addRowToTable(worker);
+
+        // 폼 초기화
+        document.getElementById("workerForm").reset();
+    }
+
+    // IndexedDB에 저장
+    function saveToDB(worker) {
+        const transaction = db.transaction(['workers'], 'readwrite');
+        const store = transaction.objectStore('workers');
+        store.add(worker);
+    }
+
+    // 테이블에 추가
+    function addRowToTable(worker) {
+        const tableBody = document.getElementById('workerTable');
+        const row = document.createElement('tr');
+
+        row.dataset.id = worker.id;  // ID를 데이터 속성으로 저장
+
+        row.innerHTML = `
+            <td>${worker.date}</td>
+            <td>${worker.workTime}</td>
+            <td>${worker.name}</td>
+            <td>${worker.remarks}</td>
+            <td><button onclick="deleteWorker(${worker.id})">삭제</button></td>
+        `;
+
+        tableBody.appendChild(row);
+    }
+
+    // 근무자 삭제
+    function deleteWorker(id) {
+        const transaction = db.transaction(['workers'], 'readwrite');
+        const store = transaction.objectStore('workers');
+        store.delete(id);
+
+        // 삭제된 근무자 추가
+        deletedWorkers.push(id);
+
+        // 삭제 후 테이블에서 해당 행 제거
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        row.remove();
+    }
+
+    // 엑셀로 저장
+    function saveToExcel() {
+        const today = new Date().toISOString().split('T')[0];
+        const workers = [];
+
+        // 테이블의 모든 행을 가져오되, 삭제된 항목 제외
+        const rows = document.querySelectorAll('#workerTable tr');
+        rows.forEach(row => {
+            const workerId = row.dataset.id;
+
+            // 삭제되지 않은 근무자만 추가
+            if (!deletedWorkers.includes(Number(workerId))) {
+                const cells = row.querySelectorAll('td');
+                const worker = {
+                    날짜: cells[0].innerText,
+                    근무시간: cells[1].innerText,
+                    이름: cells[2].innerText,
+                    근무유형: cells[3].innerText,
+                    저장시간: new Date().toLocaleDateString(),
+                };
+                workers.push(worker);
+            }
+        });
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(workers);
+        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+        XLSX.writeFile(wb, `근무표_${today}.xlsx`);
+    }
+
+    // 공유 링크 생성
+    function shareLink() {
+        const workers = [];
+        const rows = document.querySelectorAll('#workerTable tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const worker = {
+                date: cells[0].innerText,
+                workTime: cells[1].innerText,
+                name: cells[2].innerText,
+                remarks: cells[3].innerText,
+                downloadDate: cells[4].innerText,
+            };
+            workers.push(worker);
+        });
+
+        const encodedData = encodeURIComponent(JSON.stringify(workers));
+        const url = `${window.location.href}?data=${encodedData}`;
+        prompt("공유할 링크를 복사하세요:", url);
+    }
+
+    // 페이지 로드 시 DB 열기
+    openDB();
+</script>
+
+</body>
+</html>
