@@ -29,6 +29,7 @@
             flex-direction: column;
             padding: 20px;
             overflow-y: auto;
+            justify-content: space-between; /* 상하 여백 균등 분배 */
         }
 
         table {
@@ -74,7 +75,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin: 20px 0;
+            margin-top: auto; /* 이 스타일을 통해 폼을 하단으로 밀어냄 */
             display: grid;
             gap: 15px;
         }
@@ -163,9 +164,7 @@
         <tbody id="workerTable"></tbody>
     </table>
 
-        <br><br><br><br>
-    
-    <!-- 근무자 추가 폼 -->
+     <!-- 근무자 추가 폼 -->
     <form id="workerForm">
         <!-- 날짜, 시작시간, 종료시간 한 줄로 배치 -->
         <div class="form-row">
@@ -204,150 +203,9 @@
     </form>
 </div>
 
-<!-- 엑셀 라이브러리 추가 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
 
 <script>
-    // IndexedDB에 데이터 저장
-    const dbName = 'workerDB';
-    const dbVersion = 1;
-    let db;
-
-    // IndexedDB 연결 및 테이블 생성
-    function openDB() {
-        const request = indexedDB.open(dbName, dbVersion);
-        
-        request.onupgradeneeded = function(event) {
-            db = event.target.result;
-            if (!db.objectStoreNames.contains('workers')) {
-                db.createObjectStore('workers', { keyPath: 'id', autoIncrement: true });
-            }
-        };
-
-        request.onsuccess = function(event) {
-            db = event.target.result;
-            loadDataFromDB();
-        };
-
-        request.onerror = function(event) {
-            console.error("DB 연결 실패:", event.target.error);
-        };
-    }
-
-    // IndexedDB에서 데이터 로드
-    function loadDataFromDB() {
-        const transaction = db.transaction(['workers'], 'readonly');
-        const store = transaction.objectStore('workers');
-        const request = store.getAll();
-
-        request.onsuccess = function(event) {
-            const workers = event.target.result;
-            workers.forEach(worker => addRowToTable(worker));
-        };
-    }
-
-    // IndexedDB에 데이터 저장
-    function saveToDB(worker) {
-        const transaction = db.transaction(['workers'], 'readwrite');
-        const store = transaction.objectStore('workers');
-        store.add(worker);
-    }
-
-    // 근무자 추가
-    function addWorker() {
-        const date = document.getElementById("date").value;
-        const startTime = document.getElementById("startTime").value;
-        const endTime = document.getElementById("endTime").value;
-        const name = document.getElementById("name").value;
-        const remarks = document.getElementById("remarks").value;
-
-        if (!date || !startTime || !endTime || !name) {
-            alert("모든 필수 정보를 입력해주세요.");
-            return;
-        }
-
-        const workTime = `${startTime} - ${endTime}`;
-        const worker = { date, workTime, name, remarks };
-
-        // 테이블에 추가
-        addRowToTable(worker);
-
-        // IndexedDB에 저장
-        saveToDB(worker);
-
-        document.getElementById("workerForm").reset();
-    }
-
-    function addRowToTable(worker) {
-        const table = document.getElementById("workerTable");
-        const row = table.insertRow();
-
-        row.insertCell(0).innerText = worker.date;
-        row.insertCell(1).innerText = worker.workTime;
-        row.insertCell(2).innerText = worker.name;
-        row.insertCell(3).innerText = worker.remarks;
-        row.insertCell(4).innerHTML = '<button onclick="deleteRow(this)">삭제</button>';
-    }
-
-    function deleteRow(button) {
-        const row = button.parentNode.parentNode;
-        row.parentNode.removeChild(row);
-        
-        // DB에서 해당 데이터 삭제
-        deleteFromDB(row.cells[0].innerText, row.cells[1].innerText, row.cells[2].innerText, row.cells[3].innerText);
-    }
-
-    // DB에서 해당 데이터 삭제
-    function deleteFromDB(date, workTime, name, remarks) {
-        const transaction = db.transaction(['workers'], 'readwrite');
-        const store = transaction.objectStore('workers');
-        const request = store.getAll();
-
-        request.onsuccess = function(event) {
-            const workers = event.target.result;
-            workers.forEach(worker => {
-                if (worker.date === date && worker.workTime === workTime && worker.name === name && worker.remarks === remarks) {
-                    store.delete(worker.id);
-                }
-            });
-        };
-    }
-
-    // 엑셀 파일로 저장
-    function saveToExcel() {
-        const rows = document.getElementById("workerTable").rows;
-        const data = [];
-        for (let row of rows) {
-            const cells = row.cells;
-            data.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, cells[3].innerText]);
-        }
-
-        const ws = XLSX.utils.aoa_to_sheet([['날짜', '근무 시간', '근무자', '비고'], ...data]);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "근무표");
-
-        XLSX.writeFile(wb, `근무표_${new Date().toLocaleDateString()}.xlsx`);
-    }
-
-    // 링크 공유
-    function shareLink() {
-        const rows = document.getElementById("workerTable").rows;
-        const workers = [];
-        for (let row of rows) {
-            const cells = row.cells;
-            workers.push({
-                date: cells[0].innerText,
-                workTime: cells[1].innerText,
-                name: cells[2].innerText,
-                remarks: cells[3].innerText
-            });
-        }
-
-        const workersJson = encodeURIComponent(JSON.stringify(workers));
-        const link = `${window.location.href}?data=${workersJson}`;
-        prompt("이 링크를 복사해서 공유하세요:", link);
-    }
-
+    // IndexedDB 관련 스크립트...
     openDB(); // 페이지 로드 시 DB 열기
 </script>
 
