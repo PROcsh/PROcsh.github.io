@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>화면 공유</title>
+    <title>화면 공유 연결</title>
     <style>
         #localVideo, #remoteVideo {
             width: 400px;
@@ -20,21 +20,27 @@
     <br>
     <button id="startShareBtn">화면 공유 시작</button>
     <button id="stopShareBtn">화면 공유 종료</button>
+    <br><br>
+    <p>이 링크를 상대방과 공유하세요:</p>
+    <input type="text" id="shareLink" readonly>
 
     <script>
         const startShareBtn = document.getElementById("startShareBtn");
         const stopShareBtn = document.getElementById("stopShareBtn");
         const localVideo = document.getElementById("localVideo");
         const remoteVideo = document.getElementById("remoteVideo");
+        const shareLinkInput = document.getElementById("shareLink");
 
         // WebSocket 서버와 연결
-        const socket = new WebSocket('ws://localhost:8080');
+        const socket = new WebSocket('ws://localhost:3000');
 
         let localStream;
         let peerConnection;
+        let roomID = Math.random().toString(36).substring(2, 15); // 랜덤 방 ID 생성
 
         socket.onopen = () => {
             console.log('서버에 연결됨');
+            socket.send(JSON.stringify({ type: 'join', roomID }));
         };
 
         socket.onmessage = (message) => {
@@ -45,6 +51,8 @@
                 handleAnswer(data.answer);
             } else if (data.iceCandidate) {
                 handleIceCandidate(data.iceCandidate);
+            } else if (data.roomID) {
+                shareLinkInput.value = `http://${window.location.hostname}:${window.location.port}?room=${data.roomID}`; // 링크 표시
             }
         };
 
@@ -64,7 +72,7 @@
                 // ICE Candidate 수집
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
-                        socket.send(JSON.stringify({ iceCandidate: event.candidate }));
+                        socket.send(JSON.stringify({ iceCandidate: event.candidate, roomID }));
                     }
                 };
 
@@ -77,8 +85,7 @@
                 const offer = await peerConnection.createOffer();
                 await peerConnection.setLocalDescription(offer);
 
-                socket.send(JSON.stringify({ offer: offer }));
-
+                socket.send(JSON.stringify({ offer: offer, roomID }));
             } catch (error) {
                 console.error("화면 공유 실패:", error);
             }
@@ -103,7 +110,7 @@
 
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
-                    socket.send(JSON.stringify({ iceCandidate: event.candidate }));
+                    socket.send(JSON.stringify({ iceCandidate: event.candidate, roomID }));
                 }
             };
 
@@ -114,7 +121,7 @@
             // Answer 생성 및 서버로 전송
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
-            socket.send(JSON.stringify({ answer: answer }));
+            socket.send(JSON.stringify({ answer: answer, roomID }));
         }
 
         // Answer 처리
