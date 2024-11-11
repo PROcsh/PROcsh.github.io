@@ -52,7 +52,10 @@
             } else if (data.iceCandidate) {
                 handleIceCandidate(data.iceCandidate);
             } else if (data.roomID) {
-                shareLinkInput.value = `http://${window.location.hostname}:${window.location.port}?room=${data.roomID}`; // 링크 표시
+                // 방 ID가 전달되면 자동으로 링크 생성
+                const shareLink = `${window.location.href}?room=${data.roomID}`;
+                shareLinkInput.value = shareLink; // 공유할 링크 자동 생성
+                console.log("공유 링크:", shareLink);
             }
         };
 
