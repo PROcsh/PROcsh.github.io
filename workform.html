@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>특수구조대 근무표</title>
+    <title>근무표</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7fa;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f8f9fc;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            color: #333;
         }
 
         h2 {
@@ -21,36 +23,46 @@
             margin-top: 20px;
         }
 
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
             background-color: #fff;
             border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            flex: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         th, td {
-            padding: 12px;
+            padding: 14px 20px;
             text-align: center;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         th {
             background-color: #f4f7fa;
-            font-weight: bold;
+            font-weight: 500;
+        }
+
+        td {
+            background-color: #fff;
         }
 
         td button {
             background-color: #e74c3c;
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s;
         }
 
         td button:hover {
@@ -61,28 +73,25 @@
             background-color: #ffffff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 600px;
-            margin: 20px auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
             display: grid;
-            grid-template-columns: 1fr;
             gap: 15px;
         }
 
         .form-row {
             display: flex;
-            justify-content: space-between;
-            gap: 10px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .form-row label {
             font-size: 14px;
             color: #666;
-            margin-bottom: 5px;
         }
 
         .form-row input {
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -95,15 +104,19 @@
             border-color: #4a90e2;
         }
 
+        .form-row .half-width {
+            width: 32%;
+        }
+
         form button {
             background-color: #4a90e2;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px 20px;
             font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s;
         }
 
         form button:hover {
@@ -112,8 +125,8 @@
 
         .button-group {
             display: flex;
-            justify-content: space-between;
             gap: 10px;
+            justify-content: space-between;
         }
 
         .button-group button {
@@ -121,115 +134,145 @@
         }
 
         @media (max-width: 768px) {
-            table {
-                font-size: 14px;
-            }
-
-            form {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            form button {
-                width: 100%;
-            }
-
             .form-row {
                 flex-direction: column;
             }
 
             .button-group {
                 flex-direction: column;
-                gap: 10px;
             }
         }
     </style>
 </head>
 <body>
 
-<h2>특수구조대 근무표</h2>
+<div class="container">
+    <h2>근무표 관리</h2>
 
-<!-- 근무표 테이블 -->
-<table>
-    <thead>
-        <tr>
-            <th>날짜</th>
-            <th>근무 시간</th>
-            <th>근무자</th>
-            <th>비고</th>
-            <th>삭제</th>
-        </tr>
-    </thead>
-    <tbody id="workerTable"></tbody>
-</table>
+    <!-- 근무표 테이블 -->
+    <table>
+        <thead>
+            <tr>
+                <th>날짜</th>
+                <th>근무 시간</th>
+                <th>근무자</th>
+                <th>비고</th>
+                <th>삭제</th>
+            </tr>
+        </thead>
+        <tbody id="workerTable"></tbody>
+    </table>
 
-<!-- 근무자 추가 폼 -->
-<form id="workerForm">
-    <div class="form-row">
-        <div>
-            <label for="date">날짜:</label>
-            <input type="date" id="date" required>
+    <!-- 근무자 추가 폼 -->
+    <form id="workerForm">
+        <!-- 날짜, 시작시간, 종료시간 한 줄로 배치 -->
+        <div class="form-row">
+            <div class="half-width">
+                <label for="date">날짜:</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="half-width">
+                <label for="startTime">시작 시간:</label>
+                <input type="time" id="startTime" required>
+            </div>
+            <div class="half-width">
+                <label for="endTime">종료 시간:</label>
+                <input type="time" id="endTime" required>
+            </div>
         </div>
-        <div>
-            <label for="startTime">시작 시간:</label>
-            <input type="time" id="startTime" required>
+
+        <!-- 근무자 및 비고 입력 -->
+        <div class="form-row">
+            <div class="half-width">
+                <label for="name">근무자:</label>
+                <input type="text" id="name" placeholder="이름" required>
+            </div>
+            <div class="half-width">
+                <label for="remarks">비고:</label>
+                <input type="text" id="remarks" placeholder="비고">
+            </div>
         </div>
-        <div>
-            <label for="endTime">종료 시간:</label>
-            <input type="time" id="endTime" required>
+
+        <div class="button-group">
+            <button type="button" onclick="addWorker()">추가</button>
+            <button type="button" onclick="saveToText()">텍스트로 저장</button>
+            <button type="button" onclick="saveToExcel()">엑셀로 저장</button>
+            <button type="button" onclick="shareLink()">공유</button>
         </div>
-    </div>
-
-    <label for="name">근무자:</label>
-    <input type="text" id="name" placeholder="이름" required>
-
-    <label for="remarks">비고:</label>
-    <input type="text" id="remarks" placeholder="비고">
-
-    <div class="button-group">
-        <button type="button" onclick="addWorker()">추가</button>
-        <button type="button" onclick="saveToText()">텍스트로 저장</button>
-        <button type="button" onclick="saveToExcel()">엑셀로 저장</button>
-        <button type="button" onclick="shareLink()">공유</button>
-    </div>
-</form>
+    </form>
+</div>
 
 <!-- 엑셀 라이브러리 추가 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
 
 <script>
-    // 페이지 로드 시 로컬 저장소에 저장된 데이터가 있으면 불러오기
-    window.onload = function() {
-        const savedData = localStorage.getItem("workerData");
-        if (savedData) {
-            const workers = JSON.parse(savedData);
-            workers.forEach(worker => addRowToTable(worker));
-        }
-    };
+    // IndexedDB에 데이터 저장
+    const dbName = 'workerDB';
+    const dbVersion = 1;
+    let db;
 
+    // IndexedDB 연결 및 테이블 생성
+    function openDB() {
+        const request = indexedDB.open(dbName, dbVersion);
+        
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('workers')) {
+                db.createObjectStore('workers', { keyPath: 'id', autoIncrement: true });
+            }
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+            loadDataFromDB();
+        };
+
+        request.onerror = function(event) {
+            console.error("DB 연결 실패:", event.target.error);
+        };
+    }
+
+    // IndexedDB에서 데이터 로드
+    function loadDataFromDB() {
+        const transaction = db.transaction(['workers'], 'readonly');
+        const store = transaction.objectStore('workers');
+        const request = store.getAll();
+
+        request.onsuccess = function(event) {
+            const workers = event.target.result;
+            workers.forEach(worker => addRowToTable(worker));
+        };
+    }
+
+    // IndexedDB에 데이터 저장
+    function saveToDB(worker) {
+        const transaction = db.transaction(['workers'], 'readwrite');
+        const store = transaction.objectStore('workers');
+        store.add(worker);
+    }
+
+    // 근무자 추가
     function addWorker() {
-        // 폼 입력값 가져오기
         const date = document.getElementById("date").value;
         const startTime = document.getElementById("startTime").value;
         const endTime = document.getElementById("endTime").value;
         const name = document.getElementById("name").value;
         const remarks = document.getElementById("remarks").value;
 
-        // 입력값이 없을 경우 경고
         if (!date || !startTime || !endTime || !name) {
             alert("모든 필수 정보를 입력해주세요.");
             return;
         }
 
-        // 근무 시간 형식 합치기
         const workTime = `${startTime} - ${endTime}`;
-
         const worker = { date, workTime, name, remarks };
 
         // 테이블에 추가
         addRowToTable(worker);
 
-        // 폼 초기화
+        // IndexedDB에 저장
+        saveToDB(worker);
+
         document.getElementById("workerForm").reset();
     }
 
@@ -245,44 +288,43 @@
     }
 
     function deleteRow(button) {
-        // 선택한 행 삭제
         const row = button.parentNode.parentNode;
         row.parentNode.removeChild(row);
-        saveToLocal(); // 삭제 후 저장
+        
+        // DB에서 해당 데이터 삭제
+        deleteFromDB(row.cells[0].innerText, row.cells[1].innerText, row.cells[2].innerText, row.cells[3].innerText);
     }
 
-    function saveToLocal() {
-        const rows = document.getElementById("workerTable").rows;
-        const workers = [];
-        for (let row of rows) {
-            const cells = row.cells;
-            workers.push({
-                date: cells[0].innerText,
-                workTime: cells[1].innerText,
-                name: cells[2].innerText,
-                remarks: cells[3].innerText
-            });
-        }
+    // DB에서 해당 데이터 삭제
+    function deleteFromDB(date, workTime, name, remarks) {
+        const transaction = db.transaction(['workers'], 'readwrite');
+        const store = transaction.objectStore('workers');
+        const request = store.getAll();
 
-        // 로컬 저장소에 데이터 저장
-        localStorage.setItem("workerData", JSON.stringify(workers));
+        request.onsuccess = function(event) {
+            const workers = event.target.result;
+            workers.forEach(worker => {
+                if (worker.date === date && worker.workTime === workTime && worker.name === name && worker.remarks === remarks) {
+                    store.delete(worker.id);
+                }
+            });
+        };
     }
 
     // 텍스트 파일로 저장
     function saveToText() {
         const rows = document.getElementById("workerTable").rows;
-        let textContent = "날짜\t근무 시간\t근무자\t비고\n";
+        let textContent = '날짜\t근무 시간\t근무자\t비고\n';
 
         for (let row of rows) {
             const cells = row.cells;
             textContent += `${cells[0].innerText}\t${cells[1].innerText}\t${cells[2].innerText}\t${cells[3].innerText}\n`;
         }
 
-        const filename = `${new Date().toISOString().split('T')[0]}.txt`;
         const blob = new Blob([textContent], { type: 'text/plain' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = filename;
+        link.download = `근무표_${new Date().toLocaleDateString()}.txt`;
         link.click();
     }
 
@@ -290,24 +332,19 @@
     function saveToExcel() {
         const rows = document.getElementById("workerTable").rows;
         const data = [];
-
         for (let row of rows) {
             const cells = row.cells;
-            data.push([
-                cells[0].innerText, // 날짜
-                cells[1].innerText, // 근무 시간
-                cells[2].innerText, // 근무자
-                cells[3].innerText  // 비고
-            ]);
+            data.push([cells[0].innerText, cells[1].innerText, cells[2].innerText, cells[3].innerText]);
         }
 
-        const ws = XLSX.utils.aoa_to_sheet(data);
+        const ws = XLSX.utils.aoa_to_sheet([['날짜', '근무 시간', '근무자', '비고'], ...data]);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, '근무표');
-        const filename = `${new Date().toISOString().split('T')[0]}.xlsx`;
-        XLSX.writeFile(wb, filename);
+        XLSX.utils.book_append_sheet(wb, ws, "근무표");
+
+        XLSX.writeFile(wb, `근무표_${new Date().toLocaleDateString()}.xlsx`);
     }
 
+    // 링크 공유
     function shareLink() {
         const rows = document.getElementById("workerTable").rows;
         const workers = [];
@@ -325,6 +362,8 @@
         const link = `${window.location.href}?data=${workersJson}`;
         prompt("이 링크를 복사해서 공유하세요:", link);
     }
+
+    openDB(); // 페이지 로드 시 DB 열기
 </script>
 
 </body>
