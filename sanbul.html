@@ -332,7 +332,7 @@
 
     // 공유 기능: 데이터 클립보드에 복사
    function shareLink() {
-    let tableData = "날짜\t근무시간\t근무자\t근무장소\t산불위기경보단계\t산불지수 예측\t개인임무\n";  // CSV 구분자로 탭(\t)을 사용
+    let tableData = "날짜,\t근무시간,\t근무자,\t근무장소,\t산불위기경보단계, \t산불지수 예측, \t개인임무.\n";  // CSV 구분자로 탭(\t)을 사용
     const rows = document.querySelectorAll("#workerTable tr");
     rows.forEach(row => {
         const columns = row.querySelectorAll("td");
