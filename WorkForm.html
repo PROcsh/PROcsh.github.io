@@ -31,8 +31,11 @@
     <label for="date">날짜:</label>
     <input type="date" id="date" required>
     
-    <label for="time">근무 시간:</label>
-    <input type="text" id="time" placeholder="예: 09:00 - 18:00" required>
+    <label for="startTime">시작 시간:</label>
+    <input type="time" id="startTime" required>
+    
+    <label for="endTime">종료 시간:</label>
+    <input type="time" id="endTime" required>
     
     <label for="name">근무자:</label>
     <input type="text" id="name" placeholder="이름" required>
@@ -76,22 +79,26 @@
     function addWorker() {
         // 폼 입력값 가져오기
         const date = document.getElementById("date").value;
-        const time = document.getElementById("time").value;
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
         const name = document.getElementById("name").value;
         const remarks = document.getElementById("remarks").value;
 
         // 입력값이 없을 경우 경고
-        if (!date || !time || !name) {
+        if (!date || !startTime || !endTime || !name) {
             alert("모든 필수 정보를 입력해주세요.");
             return;
         }
+
+        // 근무 시간 형식 합치기
+        const workTime = `${startTime} - ${endTime}`;
 
         // 테이블 행 추가
         const table = document.getElementById("workerTable");
         const row = table.insertRow();
         
         row.insertCell(0).innerText = date;
-        row.insertCell(1).innerText = time;
+        row.insertCell(1).innerText = workTime;
         row.insertCell(2).innerText = name;
         row.insertCell(3).innerText = remarks;
         row.insertCell(4).innerHTML = '<button onclick="deleteRow(this)">삭제</button>';
