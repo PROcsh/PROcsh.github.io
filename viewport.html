@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>화면 공유</title>
+    <style>
+        #localVideo, #remoteVideo {
+            width: 400px;
+            height: 300px;
+            margin: 10px;
+            border: 2px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h2>화면 공유</h2>
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+    <br>
+    <button id="startShareBtn">화면 공유 시작</button>
+    <button id="stopShareBtn">화면 공유 종료</button>
+
+    <script>
+        const startShareBtn = document.getElementById("startShareBtn");
+        const stopShareBtn = document.getElementById("stopShareBtn");
+        const localVideo = document.getElementById("localVideo");
+        const remoteVideo = document.getElementById("remoteVideo");
+
+        // WebSocket 서버와 연결
+        const socket = new WebSocket('ws://localhost:8080');
+
+        let localStream;
+        let peerConnection;
+
+        socket.onopen = () => {
+            console.log('서버에 연결됨');
+        };
+
+        socket.onmessage = (message) => {
+            const data = JSON.parse(message.data);
+            if (data.offer) {
+                handleOffer(data.offer);
+            } else if (data.answer) {
+                handleAnswer(data.answer);
+            } else if (data.iceCandidate) {
+                handleIceCandidate(data.iceCandidate);
+            }
+        };
+
+        // 화면 공유 시작
+        startShareBtn.onclick = async () => {
+            try {
+                // 화면 공유 요청
+                localStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                localVideo.srcObject = localStream;
+
+                peerConnection = new RTCPeerConnection();
+
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+
+                // ICE Candidate 수집
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        socket.send(JSON.stringify({ iceCandidate: event.candidate }));
+                    }
+                };
+
+                // 원격 비디오 스트림 수신
+                peerConnection.ontrack = (event) => {
+                    remoteVideo.srcObject = event.streams[0];
+                };
+
+                // Offer 생성 및 서버로 전송
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+
+                socket.send(JSON.stringify({ offer: offer }));
+
+            } catch (error) {
+                console.error("화면 공유 실패:", error);
+            }
+        };
+
+        // 화면 공유 종료
+        stopShareBtn.onclick = () => {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop()); // 화면 공유 종료
+            }
+            if (peerConnection) {
+                peerConnection.close(); // WebRTC 연결 종료
+            }
+        };
+
+        // Offer 처리 (상대방으로부터)
+        async function handleOffer(offer) {
+            peerConnection = new RTCPeerConnection();
+
+            // Offer를 Remote Description으로 설정
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    socket.send(JSON.stringify({ iceCandidate: event.candidate }));
+                }
+            };
+
+            peerConnection.ontrack = (event) => {
+                remoteVideo.srcObject = event.streams[0];
+            };
+
+            // Answer 생성 및 서버로 전송
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            socket.send(JSON.stringify({ answer: answer }));
+        }
+
+        // Answer 처리
+        function handleAnswer(answer) {
+            peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        }
+
+        // ICE Candidate 처리
+        function handleIceCandidate(candidate) {
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+    </script>
+</body>
+</html>
