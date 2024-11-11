@@ -348,33 +348,38 @@
         });
     }
 
-    // 파일 저장 기능: Excel 파일로 저장 (삭제된 항목 제외)
-    function saveToExcel() {
-        const tableData = [];
-        const headers = ["날짜", "근무 시간", "근무자", "근무장소", "산불위기경보단계", "산불지수 예측", "공지사항"];
-        tableData.push(headers);
+   // 파일 저장 기능: Excel 파일로 저장 (삭제란 제외)
+function saveToExcel() {
+    const tableData = [];
+    const headers = ["날짜", "근무 시간", "근무자", "근무장소", "산불위기경보단계", "산불지수 예측", "개인임무"];
+    tableData.push(headers);
 
-        // 테이블에서 데이터 읽어오기 (삭제된 항목 제외)
-        const rows = document.querySelectorAll("#workerTable tr");
-        rows.forEach(row => {
-            const id = row.getAttribute('data-id');
-            if (deletedWorkers.includes(parseInt(id))) return;  // 삭제된 항목 제외
+    // 테이블에서 데이터 읽어오기 (삭제된 항목 제외)
+    const rows = document.querySelectorAll("#workerTable tr");
+    rows.forEach(row => {
+        const id = row.getAttribute('data-id');
+        if (deletedWorkers.includes(parseInt(id))) return;  // 삭제된 항목 제외
 
-            const columns = row.querySelectorAll("td");
-            let rowData = [];
-            columns.forEach(col => rowData.push(col.textContent.trim()));
-            tableData.push(rowData);
+        const columns = row.querySelectorAll("td");
+        let rowData = [];
+        columns.forEach((col, index) => {
+            // "삭제" 버튼이 포함된 마지막 열은 제외
+            if (index !== columns.length - 1) {
+                rowData.push(col.textContent.trim());
+            }
         });
+        tableData.push(rowData);
+    });
 
-        // 오늘 날짜를 포함한 파일명 생성
-        const today = new Date().toISOString().split('T')[0]; // yyyy-MM-dd 형식
-        const ws = XLSX.utils.aoa_to_sheet(tableData);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "근무표");
+    // 오늘 날짜를 포함한 파일명 생성
+    const today = new Date().toISOString().split('T')[0]; // yyyy-MM-dd 형식
+    const ws = XLSX.utils.aoa_to_sheet(tableData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "근무표");
 
-        // 엑셀 파일로 다운로드
-        XLSX.writeFile(wb, `산불_근무표_${today}.xlsx`);
-    }
+    // 엑셀 파일로 다운로드
+    XLSX.writeFile(wb, `산불_근무표_${today}.xlsx`);
+}
 
     // 페이지 로드 시 DB 열기
     openDB();
