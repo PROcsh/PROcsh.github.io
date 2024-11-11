@@ -5,46 +5,144 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>근무표</title>
     <style>
+        /* 기본 스타일 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        h2 {
+            text-align: center;
+            color: #4a90e2;
+            margin-top: 20px;
+        }
+
+        /* 테이블 스타일 */
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex: 1;
         }
+
         th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            padding: 12px;
             text-align: center;
+            border-bottom: 1px solid #ddd;
         }
+
         th {
-            background-color: #f2f2f2;
+            background-color: #f4f7fa;
+            font-weight: bold;
         }
+
+        td button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        td button:hover {
+            background-color: #c0392b;
+        }
+
+        /* 폼 스타일 */
         form {
-            margin-bottom: 20px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 20px auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        /* 날짜와 시간을 한 줄에 배치 */
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .form-row label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .form-row input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-row input:focus {
+            border-color: #4a90e2;
+        }
+
+        form button {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #357ab7;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            table {
+                font-size: 14px;
+            }
+
+            form {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            form button {
+                width: 100%;
+            }
+
+            /* 날짜와 시간 입력란을 세로로 배치 */
+            .form-row {
+                flex-direction: column;
+            }
+
+            .form-row input {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
 
 <h2>근무표</h2>
-
-<!-- 근무자 추가 폼 -->
-<form id="workerForm">
-    <label for="date">날짜:</label>
-    <input type="date" id="date" required>
-    
-    <label for="startTime">시작 시간:</label>
-    <input type="time" id="startTime" required>
-    
-    <label for="endTime">종료 시간:</label>
-    <input type="time" id="endTime" required>
-    
-    <label for="name">근무자:</label>
-    <input type="text" id="name" placeholder="이름" required>
-    
-    <label for="remarks">비고:</label>
-    <input type="text" id="remarks" placeholder="비고">
-    
-    <button type="button" onclick="addWorker()">추가</button>
-</form>
 
 <!-- 근무표 테이블 -->
 <table>
@@ -74,6 +172,32 @@
         </tr>
     </tbody>
 </table>
+
+<!-- 근무자 추가 폼 -->
+<form id="workerForm">
+    <div class="form-row">
+        <div>
+            <label for="date">날짜:</label>
+            <input type="date" id="date" required>
+        </div>
+        <div>
+            <label for="startTime">시작 시간:</label>
+            <input type="time" id="startTime" required>
+        </div>
+        <div>
+            <label for="endTime">종료 시간:</label>
+            <input type="time" id="endTime" required>
+        </div>
+    </div>
+
+    <label for="name">근무자:</label>
+    <input type="text" id="name" placeholder="이름" required>
+
+    <label for="remarks">비고:</label>
+    <input type="text" id="remarks" placeholder="비고">
+
+    <button type="button" onclick="addWorker()">추가</button>
+</form>
 
 <script>
     function addWorker() {
