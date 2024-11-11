@@ -207,7 +207,7 @@
 
             <div class="half">
                 <label for="notice">개인임무:</label>
-                <input id="notice" placeholder="공지사항을 입력하세요" required>
+                <input id="notice" placeholder="개인임무를 입력하세요" required>
             </div>
           
             <div class="button-group">
@@ -268,7 +268,7 @@
         const remarks = document.getElementById("remarks").value;
         const warningLevel = document.getElementById("warningLevel").value;  // 산불위기경보단계
         const fireIndex = document.getElementById("fireIndex").value;  // 산불지수 예측
-        const notice = document.getElementById("notice").value;  // 공지사항
+        const notice = document.getElementById("notice").value;  // 개인임무
 
         if (!date || !startTime || !endTime || !name || !remarks || !warningLevel || !fireIndex || !notice) {
             alert("모든 필수 정보를 입력해주세요.");
