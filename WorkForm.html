@@ -110,6 +110,16 @@
             background-color: #357ab7;
         }
 
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
         @media (max-width: 768px) {
             table {
                 font-size: 14px;
@@ -126,6 +136,11 @@
 
             .form-row {
                 flex-direction: column;
+            }
+
+            .button-group {
+                flex-direction: column;
+                gap: 10px;
             }
         }
     </style>
@@ -171,9 +186,11 @@
     <label for="remarks">비고:</label>
     <input type="text" id="remarks" placeholder="비고">
 
-    <button type="button" onclick="addWorker()">추가</button>
-    <button type="button" onclick="saveToLocal()">저장</button>
-    <button type="button" onclick="shareLink()">공유</button>
+    <div class="button-group">
+        <button type="button" onclick="addWorker()">추가</button>
+        <button type="button" onclick="saveToLocal()">저장</button>
+        <button type="button" onclick="shareLink()">공유</button>
+    </div>
 </form>
 
 <script>
