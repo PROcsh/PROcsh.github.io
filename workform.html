@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>근무표</title>
+    <title>특수구조대 일일 상황 근무표</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
@@ -147,7 +147,7 @@
 <body>
 
 <div class="container">
-    <h2>근무표 관리</h2>
+    <h2>특수구조대 일일 상황 근무표</h2>
 
     <!-- 근무표 테이블 -->
     <table>
@@ -163,46 +163,41 @@
         <tbody id="workerTable"></tbody>
     </table>
 
-<br>
-  <br>
-    <br>
-      <br>
-        <br>
-    
+    <br><br><br><br>
+
     <!-- 근무자 추가 폼 -->
     <form id="workerForm">
         <!-- 날짜, 시작시간, 종료시간 한 줄로 배치 -->
         <div class="form-row">
-            <div class="half-width">
+            <div class="half">
                 <label for="date">날짜:</label>
                 <input type="date" id="date" required>
             </div>
-            <div class="half-width">
+            <div class="half">
                 <label for="startTime">시작 시간:</label>
                 <input type="time" id="startTime" required>
             </div>
-            <div class="half-width">
+            <div class="half">
                 <label for="endTime">종료 시간:</label>
                 <input type="time" id="endTime" required>
             </div>
-        </div>
+      
 
         <!-- 근무자 및 비고 입력 -->
         <div class="form-row">
-            <div class="half-width">
+            <div class="half">
                 <label for="name">근무자:</label>
                 <input type="text" id="name" placeholder="이름" required>
             </div>
-            <div class="half-width">
+            <div class="half">
                 <label for="remarks">비고:</label>
                 <input type="text" id="remarks" placeholder="비고">
             </div>
         </div>
-
+          
         <div class="button-group">
             <button type="button" onclick="addWorker()">추가</button>
-            <button type="button" onclick="saveToText()">텍스트로 저장</button>
-            <button type="button" onclick="saveToExcel()">엑셀로 저장</button>
+            <button type="button" onclick="saveToExcel()">파일저장</button>
             <button type="button" onclick="shareLink()">공유</button>
         </div>
     </form>
@@ -315,23 +310,6 @@
                 }
             });
         };
-    }
-
-    // 텍스트 파일로 저장
-    function saveToText() {
-        const rows = document.getElementById("workerTable").rows;
-        let textContent = '날짜\t근무 시간\t근무자\t비고\n';
-
-        for (let row of rows) {
-            const cells = row.cells;
-            textContent += `${cells[0].innerText}\t${cells[1].innerText}\t${cells[2].innerText}\t${cells[3].innerText}\n`;
-        }
-
-        const blob = new Blob([textContent], { type: 'text/plain' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `근무표_${new Date().toLocaleDateString()}.txt`;
-        link.click();
     }
 
     // 엑셀 파일로 저장
