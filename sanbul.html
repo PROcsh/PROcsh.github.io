@@ -331,22 +331,22 @@
     }
 
     // 공유 기능: 데이터 클립보드에 복사
-    function shareLink() {
-        let tableData = "날짜, 근무시간, 근무자, 근무장소, 산불위기경보단계, 산불지수 예측, 공지사항\n";
-        const rows = document.querySelectorAll("#workerTable tr");
-        rows.forEach(row => {
-            const columns = row.querySelectorAll("td");
-            let rowData = [];
-            columns.forEach(col => rowData.push(col.textContent.trim()));
-            tableData += rowData.join(", ") + "\n";
-        });
+   function shareLink() {
+    let tableData = "날짜\t근무시간\t근무자\t근무장소\t산불위기경보단계\t산불지수 예측\t개인임무\n";  // CSV 구분자로 탭(\t)을 사용
+    const rows = document.querySelectorAll("#workerTable tr");
+    rows.forEach(row => {
+        const columns = row.querySelectorAll("td");
+        let rowData = [];
+        columns.forEach(col => rowData.push(col.textContent.trim()));
+        tableData += rowData.join("\t") + "\n";  // 행 데이터를 탭으로 구분
+    });
 
-        navigator.clipboard.writeText(tableData).then(() => {
-            alert("근무표가 클립보드에 복사되었습니다.");
-        }).catch(err => {
-            alert("클립보드 복사 실패: " + err);
-        });
-    }
+    navigator.clipboard.writeText(tableData).then(() => {
+        alert("근무표 데이터가 클립보드에 복사되었습니다. 다른 프로그램에 붙여넣기 하세요.");
+    }).catch(err => {
+        alert("클립보드 복사 실패: " + err);
+    });
+}
 
    // 파일 저장 기능: Excel 파일로 저장 (삭제란 제외)
 function saveToExcel() {
