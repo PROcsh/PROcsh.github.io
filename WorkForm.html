@@ -188,10 +188,14 @@
 
     <div class="button-group">
         <button type="button" onclick="addWorker()">추가</button>
-        <button type="button" onclick="saveToLocal()">저장</button>
+        <button type="button" onclick="saveToText()">텍스트로 저장</button>
+        <button type="button" onclick="saveToExcel()">엑셀로 저장</button>
         <button type="button" onclick="shareLink()">공유</button>
     </div>
 </form>
+
+<!-- 엑셀 라이브러리 추가 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
 
 <script>
     // 페이지 로드 시 로컬 저장소에 저장된 데이터가 있으면 불러오기
@@ -262,7 +266,46 @@
 
         // 로컬 저장소에 데이터 저장
         localStorage.setItem("workerData", JSON.stringify(workers));
-        alert("저장되었습니다!"); // 저장 완료 후 알림
+    }
+
+    // 텍스트 파일로 저장
+    function saveToText() {
+        const rows = document.getElementById("workerTable").rows;
+        let textContent = "날짜\t근무 시간\t근무자\t비고\n";
+
+        for (let row of rows) {
+            const cells = row.cells;
+            textContent += `${cells[0].innerText}\t${cells[1].innerText}\t${cells[2].innerText}\t${cells[3].innerText}\n`;
+        }
+
+        const filename = `${new Date().toISOString().split('T')[0]}.txt`;
+        const blob = new Blob([textContent], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+    }
+
+    // 엑셀 파일로 저장
+    function saveToExcel() {
+        const rows = document.getElementById("workerTable").rows;
+        const data = [];
+
+        for (let row of rows) {
+            const cells = row.cells;
+            data.push([
+                cells[0].innerText, // 날짜
+                cells[1].innerText, // 근무 시간
+                cells[2].innerText, // 근무자
+                cells[3].innerText  // 비고
+            ]);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '근무표');
+        const filename = `${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, filename);
     }
 
     function shareLink() {
@@ -278,13 +321,8 @@
             });
         }
 
-        // JSON 데이터 직렬화
-        const workersJson = JSON.stringify(workers);
-
-        // 데이터를 공유할 수 있는 링크 생성
-        const link = window.location.href.split('?')[0] + "#workersData=" + encodeURIComponent(workersJson);
-
-        // 링크 복사 대화 상자 표시
+        const workersJson = encodeURIComponent(JSON.stringify(workers));
+        const link = `${window.location.href}?data=${workersJson}`;
         prompt("이 링크를 복사해서 공유하세요:", link);
     }
 </script>
