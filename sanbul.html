@@ -91,7 +91,7 @@
             color: #666;
         }
 
-        .form-row input {
+        .form-row input, .form-row textarea {
             padding: 12px;
             font-size: 16px;
             border: 1px solid #ccc;
@@ -101,7 +101,7 @@
             transition: border-color 0.3s ease;
         }
 
-        .form-row input:focus {
+        .form-row input:focus, .form-row textarea:focus {
             border-color: #4a90e2;
         }
 
@@ -146,7 +146,7 @@
     </style>
 </head>
 <body>
-
+            
 <div class="container">
     <h2>산불 일일상황 근무표</h2>
 
@@ -157,23 +157,16 @@
                 <th>날짜</th>
                 <th>근무 시간</th>
                 <th>근무자</th>
-                <th>근무유형</th>
+                <th>근무장소</th>
+                <th>산불위기경보단계</th>
+                <th>산불지수 예측</th>
+                <th>공지사항</th>
                 <th>삭제</th>
             </tr>
         </thead>
         <tbody id="workerTable"></tbody>
     </table>
-<br>
-<!-- 공지사항 입력란 추가 -->
-            <div class="form-row">
-                <label for="notice">공지사항:</label>
-                <textarea id="notice" placeholder="공지사항을 입력하세요" rows="4"></textarea>
-            </div>
-            <div class="form-row">
-                <label for="fileInput">파일 업로드:</label>
-                <input type="file" id="fileInput">
-  </div>
-              <br>
+    <br>
   
     <!-- 근무자 추가 폼 -->
     <form id="workerForm">
@@ -197,18 +190,31 @@
                 <input type="text" id="name" placeholder="이름" required>
             </div>
             <div class="half">
-                <label for="remarks">근무유형:</label>
-                <input type="text" id="remarks" placeholder="비고">
+                <label for="remarks">근무장소:</label>
+                <input type="text" id="remarks" placeholder="근무 장소" required>
             </div>
-           
+          
+            <!-- 공지사항 입력란 추가 -->
+            <div class="half">
+                <label for="warningLevel">산불위기경보단계:</label>
+                <input id="warningLevel" placeholder="산불위기경보단계 입력" required>
+            </div>
 
-            <!-- 파일 입력 필드 추가 -->
-                <div class="button-group">
+            <div class="half">
+                <label for="fireIndex">산불지수 예측:</label>
+                <input id="fireIndex" placeholder="산불지수 예측 입력" required>
+            </div>
+
+            <div class="half">
+                <label for="notice">공지사항:</label>
+                <input id="notice" placeholder="공지사항을 입력하세요" required>
+            </div>
+          
+            <div class="button-group">
+                <!-- 버튼의 type을 button으로 설정 -->
                 <button type="button" onclick="addWorker()">추가</button>
                 <button type="button" onclick="saveToExcel()">파일저장</button>
                 <button type="button" onclick="shareLink()">공유</button>
-                
-            </div>
             </div>
         </div>
     </form>
@@ -260,17 +266,18 @@
         const endTime = document.getElementById("endTime").value;
         const name = document.getElementById("name").value;
         const remarks = document.getElementById("remarks").value;
+        const warningLevel = document.getElementById("warningLevel").value;  // 산불위기경보단계
+        const fireIndex = document.getElementById("fireIndex").value;  // 산불지수 예측
         const notice = document.getElementById("notice").value;  // 공지사항
-        const fileInput = document.getElementById("fileInput").files[0]; // 파일 입력
 
-        if (!date || !startTime || !endTime || !name) {
+        if (!date || !startTime || !endTime || !name || !remarks || !warningLevel || !fireIndex || !notice) {
             alert("모든 필수 정보를 입력해주세요.");
             return;
         }
 
         const workTime = `${startTime} - ${endTime}`;
         const downloadDate = new Date().toLocaleDateString();
-        const worker = { date, workTime, name, remarks, notice, downloadDate, file: fileInput ? fileInput.name : '' };
+        const worker = { date, workTime, name, remarks, warningLevel, fireIndex, notice, downloadDate };
 
         // IndexedDB에 저장
         saveToDB(worker);
@@ -294,13 +301,14 @@
         const tableBody = document.getElementById('workerTable');
         const row = document.createElement('tr');
 
-        row.dataset.id = worker.id;  // ID를 데이터 속성으로 저장
-
         row.innerHTML = `
             <td>${worker.date}</td>
             <td>${worker.workTime}</td>
             <td>${worker.name}</td>
             <td>${worker.remarks}</td>
+            <td>${worker.warningLevel}</td>
+            <td>${worker.fireIndex}</td>
+            <td>${worker.notice}</td>
             <td><button onclick="deleteWorker(${worker.id})">삭제</button></td>
         `;
 
@@ -313,63 +321,9 @@
         const store = transaction.objectStore('workers');
         store.delete(id);
 
-        // 삭제된 근무자 추가
-        deletedWorkers.push(id);
-
         // 삭제 후 테이블에서 해당 행 제거
         const row = document.querySelector(`tr[data-id="${id}"]`);
         row.remove();
-    }
-
-    // 엑셀로 저장
-    function saveToExcel() {
-        const today = new Date().toISOString().split('T')[0];
-        const workers = [];
-
-        // 테이블의 모든 행을 가져오되, 삭제된 항목 제외
-        const rows = document.querySelectorAll('#workerTable tr');
-        rows.forEach(row => {
-            const workerId = row.dataset.id;
-
-            // 삭제되지 않은 근무자만 추가
-            if (!deletedWorkers.includes(Number(workerId))) {
-                const cells = row.querySelectorAll('td');
-                const worker = {
-                    날짜: cells[0].innerText,
-                    근무시간: cells[1].innerText,
-                    이름: cells[2].innerText,
-                    근무유형: cells[3].innerText,
-                    저장시간: new Date().toLocaleDateString(),
-                };
-                workers.push(worker);
-            }
-        });
-
-        const wb = XLSX.utils.book_new();
-        const ws = XLSX.utils.json_to_sheet(workers);
-        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-        XLSX.writeFile(wb, `근무표_${today}.xlsx`);
-    }
-
-    // 공유 링크 생성
-    function shareLink() {
-        const workers = [];
-        const rows = document.querySelectorAll('#workerTable tr');
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            const worker = {
-                date: cells[0].innerText,
-                workTime: cells[1].innerText,
-                name: cells[2].innerText,
-                remarks: cells[3].innerText,
-                downloadDate: cells[4].innerText,
-            };
-            workers.push(worker);
-        });
-
-        const encodedData = encodeURIComponent(JSON.stringify(workers));
-        const url = `${window.location.href}?data=${encodedData}`;
-        prompt("공유할 링크를 복사하세요:", url);
     }
 
     // 페이지 로드 시 DB 열기
