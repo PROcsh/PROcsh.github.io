@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>근무표</title>
     <style>
-        /* 기본 스타일 */
         body {
             font-family: 'Arial', sans-serif;
             background-color: #f4f7fa;
@@ -22,7 +21,6 @@
             margin-top: 20px;
         }
 
-        /* 테이블 스타일 */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -59,7 +57,6 @@
             background-color: #c0392b;
         }
 
-        /* 폼 스타일 */
         form {
             background-color: #ffffff;
             padding: 20px;
@@ -72,7 +69,6 @@
             gap: 15px;
         }
 
-        /* 날짜와 시간을 한 줄에 배치 */
         .form-row {
             display: flex;
             justify-content: space-between;
@@ -114,7 +110,6 @@
             background-color: #357ab7;
         }
 
-        /* 반응형 */
         @media (max-width: 768px) {
             table {
                 font-size: 14px;
@@ -129,13 +124,8 @@
                 width: 100%;
             }
 
-            /* 날짜와 시간 입력란을 세로로 배치 */
             .form-row {
                 flex-direction: column;
-            }
-
-            .form-row input {
-                width: 100%;
             }
         }
     </style>
@@ -155,22 +145,7 @@
             <th>삭제</th>
         </tr>
     </thead>
-    <tbody id="workerTable">
-        <tr>
-            <td>2024-11-01</td>
-            <td>09:00 - 18:00</td>
-            <td>김철수</td>
-            <td>주간 근무</td>
-            <td><button onclick="deleteRow(this)">삭제</button></td>
-        </tr>
-        <tr>
-            <td>2024-11-01</td>
-            <td>18:00 - 03:00</td>
-            <td>박영희</td>
-            <td>야간 근무</td>
-            <td><button onclick="deleteRow(this)">삭제</button></td>
-        </tr>
-    </tbody>
+    <tbody id="workerTable"></tbody>
 </table>
 
 <!-- 근무자 추가 폼 -->
@@ -197,9 +172,20 @@
     <input type="text" id="remarks" placeholder="비고">
 
     <button type="button" onclick="addWorker()">추가</button>
+    <button type="button" onclick="saveToLocal()">저장</button>
+    <button type="button" onclick="shareLink()">공유</button>
 </form>
 
 <script>
+    // 로컬 저장소에 저장된 근무표 로드
+    window.onload = function() {
+        const savedData = localStorage.getItem("workerData");
+        if (savedData) {
+            const workers = JSON.parse(savedData);
+            workers.forEach(worker => addRowToTable(worker));
+        }
+    };
+
     function addWorker() {
         // 폼 입력값 가져오기
         const date = document.getElementById("date").value;
@@ -217,25 +203,76 @@
         // 근무 시간 형식 합치기
         const workTime = `${startTime} - ${endTime}`;
 
-        // 테이블 행 추가
-        const table = document.getElementById("workerTable");
-        const row = table.insertRow();
-        
-        row.insertCell(0).innerText = date;
-        row.insertCell(1).innerText = workTime;
-        row.insertCell(2).innerText = name;
-        row.insertCell(3).innerText = remarks;
-        row.insertCell(4).innerHTML = '<button onclick="deleteRow(this)">삭제</button>';
+        const worker = { date, workTime, name, remarks };
+
+        // 테이블에 추가
+        addRowToTable(worker);
 
         // 폼 초기화
         document.getElementById("workerForm").reset();
+    }
+
+    function addRowToTable(worker) {
+        const table = document.getElementById("workerTable");
+        const row = table.insertRow();
+
+        row.insertCell(0).innerText = worker.date;
+        row.insertCell(1).innerText = worker.workTime;
+        row.insertCell(2).innerText = worker.name;
+        row.insertCell(3).innerText = worker.remarks;
+        row.insertCell(4).innerHTML = '<button onclick="deleteRow(this)">삭제</button>';
     }
 
     function deleteRow(button) {
         // 선택한 행 삭제
         const row = button.parentNode.parentNode;
         row.parentNode.removeChild(row);
+        saveToLocal(); // 삭제 후 저장
     }
+
+    function saveToLocal() {
+        const rows = document.getElementById("workerTable").rows;
+        const workers = [];
+        for (let row of rows) {
+            const cells = row.cells;
+            workers.push({
+                date: cells[0].innerText,
+                workTime: cells[1].innerText,
+                name: cells[2].innerText,
+                remarks: cells[3].innerText
+            });
+        }
+
+        localStorage.setItem("workerData", JSON.stringify(workers));
+    }
+
+    function shareLink() {
+        const rows = document.getElementById("workerTable").rows;
+        const workers = [];
+        for (let row of rows) {
+            const cells = row.cells;
+            workers.push({
+                date: cells[0].innerText,
+                workTime: cells[1].innerText,
+                name: cells[2].innerText,
+                remarks: cells[3].innerText
+            });
+        }
+
+        const workersJson = encodeURIComponent(JSON.stringify(workers));
+        const link = `${window.location.href}?data=${workersJson}`;
+        prompt("이 링크를 복사해서 공유하세요:", link);
+    }
+
+    // URL에서 쿼리 파라미터로 데이터 로드
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const data = urlParams.get('data');
+        if (data) {
+            const workers = JSON.parse(decodeURIComponent(data));
+            workers.forEach(worker => addRowToTable(worker));
+        }
+    };
 </script>
 
 </body>
