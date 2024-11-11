@@ -163,11 +163,22 @@
         </thead>
         <tbody id="workerTable"></tbody>
     </table>
-
+<br>
+<!-- 공지사항 입력란 추가 -->
+            <div class="form-row">
+                <label for="notice">공지사항:</label>
+                <textarea id="notice" placeholder="공지사항을 입력하세요" rows="4"></textarea>
+            </div>
+            <div class="form-row">
+                <label for="fileInput">파일 업로드:</label>
+                <input type="file" id="fileInput">
+  </div>
+              <br>
+  
     <!-- 근무자 추가 폼 -->
     <form id="workerForm">
         <div class="form-row">
-            <h2>근무 입력</h2>
+            <h2>근무입력</h2>
             <div class="half">
                 <label for="date">날짜:</label>
                 <input type="date" id="date" required>
@@ -179,21 +190,25 @@
             <div class="half">
                 <label for="endTime">종료 시간:</label>
                 <input type="time" id="endTime" required>
-           </div>
+            </div>
 
             <div class="half">
                 <label for="name">근무자:</label>
                 <input type="text" id="name" placeholder="이름" required>
-           </div>
+            </div>
             <div class="half">
                 <label for="remarks">근무유형:</label>
                 <input type="text" id="remarks" placeholder="비고">
-              </div>
-             
-            <div class="button-group">
+            </div>
+           
+
+            <!-- 파일 입력 필드 추가 -->
+                <div class="button-group">
                 <button type="button" onclick="addWorker()">추가</button>
                 <button type="button" onclick="saveToExcel()">파일저장</button>
                 <button type="button" onclick="shareLink()">공유</button>
+                
+            </div>
             </div>
         </div>
     </form>
@@ -245,6 +260,8 @@
         const endTime = document.getElementById("endTime").value;
         const name = document.getElementById("name").value;
         const remarks = document.getElementById("remarks").value;
+        const notice = document.getElementById("notice").value;  // 공지사항
+        const fileInput = document.getElementById("fileInput").files[0]; // 파일 입력
 
         if (!date || !startTime || !endTime || !name) {
             alert("모든 필수 정보를 입력해주세요.");
@@ -253,7 +270,7 @@
 
         const workTime = `${startTime} - ${endTime}`;
         const downloadDate = new Date().toLocaleDateString();
-        const worker = { date, workTime, name, remarks, downloadDate };
+        const worker = { date, workTime, name, remarks, notice, downloadDate, file: fileInput ? fileInput.name : '' };
 
         // IndexedDB에 저장
         saveToDB(worker);
