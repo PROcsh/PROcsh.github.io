@@ -29,7 +29,7 @@
             flex-direction: column;
             padding: 20px;
             overflow-y: auto;
-            justify-content: space-between; /* 상하 여백 균등 분배 */
+            justify-content: space-between;
         }
 
         table {
@@ -75,7 +75,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: auto; /* 이 스타일을 통해 폼을 하단으로 밀어냄 */
+            margin-top: auto;
             display: grid;
             gap: 15px;
         }
@@ -158,13 +158,14 @@
                 <th>근무 시간</th>
                 <th>근무자</th>
                 <th>비고</th>
+                <th>다운로드 날짜</th>
                 <th>삭제</th>
             </tr>
         </thead>
         <tbody id="workerTable"></tbody>
     </table>
 
-     <!-- 근무자 추가 폼 -->
+    <!-- 근무자 추가 폼 -->
     <form id="workerForm">
         <!-- 날짜, 시작시간, 종료시간 한 줄로 배치 -->
         <div class="form-row">
@@ -180,33 +181,159 @@
             <div class="half">
                 <label for="endTime">종료 시간:</label>
                 <input type="time" id="endTime" required>
-            </div>
-      
+           </div>
 
         <!-- 근무자 및 비고 입력 -->
-        <div class="form-row">
+       
             <div class="half">
                 <label for="name">근무자:</label>
                 <input type="text" id="name" placeholder="이름" required>
-            </div>
+           </div>
             <div class="half">
                 <label for="remarks">비고:</label>
                 <input type="text" id="remarks" placeholder="비고">
-            </div>
-        </div>
-          
+              </div>
+             
         <div class="button-group">
             <button type="button" onclick="addWorker()">추가</button>
             <button type="button" onclick="saveToExcel()">파일저장</button>
             <button type="button" onclick="shareLink()">공유</button>
-        </div>
+         </div>
+          </div>
     </form>
 </div>
 
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
 <script>
-    // IndexedDB 관련 스크립트...
-    openDB(); // 페이지 로드 시 DB 열기
+    let db;
+    const dbName = 'workerDB';
+    const dbVersion = 1;
+
+    // IndexedDB 연결
+    function openDB() {
+        const request = indexedDB.open(dbName, dbVersion);
+        request.onupgradeneeded = function (event) {
+            db = event.target.result;
+            if (!db.objectStoreNames.contains('workers')) {
+                db.createObjectStore('workers', { keyPath: 'id', autoIncrement: true });
+            }
+        };
+
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            loadDataFromDB();
+        };
+
+        request.onerror = function (event) {
+            console.error("DB 연결 실패:", event.target.error);
+        };
+    }
+
+    // DB에서 데이터 불러오기
+    function loadDataFromDB() {
+        const transaction = db.transaction(['workers'], 'readonly');
+        const store = transaction.objectStore('workers');
+        const request = store.getAll();
+
+        request.onsuccess = function (event) {
+            const workers = event.target.result;
+            workers.forEach(worker => addRowToTable(worker));
+        };
+    }
+
+    // 근무자 추가
+    function addWorker() {
+        const date = document.getElementById("date").value;
+        const startTime = document.getElementById("startTime").value;
+        const endTime = document.getElementById("endTime").value;
+        const name = document.getElementById("name").value;
+        const remarks = document.getElementById("remarks").value; // () 제거
+
+        if (!date || !startTime || !endTime || !name) {
+            alert("모든 필수 정보를 입력해주세요.");
+            return;
+        }
+
+        const workTime = `${startTime} - ${endTime}`;
+        const downloadDate = new Date().toLocaleDateString();
+        const worker = { date, workTime, name, remarks, downloadDate };
+
+        // IndexedDB에 저장
+        saveToDB(worker);
+
+        // 테이블에 추가
+        addRowToTable(worker);
+
+        // 폼 초기화
+        document.getElementById("workerForm").reset();
+    }
+
+    // IndexedDB에 저장
+    function saveToDB(worker) {
+        const transaction = db.transaction(['workers'], 'readwrite');
+        const store = transaction.objectStore('workers');
+        store.add(worker);
+    }
+
+    // 테이블에 추가
+    function addRowToTable(worker) {
+        const tableBody = document.getElementById('workerTable');
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>${worker.date}</td>
+            <td>${worker.workTime}</td>
+            <td>${worker.name}</td>
+            <td>${worker.remarks}</td>
+            <td>${worker.downloadDate}</td>
+            <td><button onclick="deleteWorker(${worker.id})">삭제</button></td>
+        `;
+
+        tableBody.appendChild(row);
+    }
+
+    // 근무자 삭제
+    function deleteWorker(id) {
+        const transaction = db.transaction(['workers'], 'readwrite');
+        const store = transaction.objectStore('workers');
+        store.delete(id);
+
+        // 삭제 후 테이블에서 해당 행 제거
+        const row = document.querySelector(`button[onclick="deleteWorker(${id})"]`).closest('tr');
+        row.remove();
+    }
+
+    // 엑셀로 저장
+    function saveToExcel() {
+        const today = new Date().toISOString().split('T')[0];
+        const table = document.querySelector('table');
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+        XLSX.writeFile(wb, `근무표_${today}.xlsx`);
+    }
+
+    // 공유 링크 생성
+    function shareLink() {
+        const workers = [];
+        const rows = document.querySelectorAll('#workerTable tr');
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const worker = {
+                date: cells[0].innerText,
+                workTime: cells[1].innerText,
+                name: cells[2].innerText,
+                remarks: cells[3].innerText,
+                downloadDate: cells[4].innerText,
+            };
+            workers.push(worker);
+        });
+
+        const encodedData = encodeURIComponent(JSON.stringify(workers));
+        const url = `${window.location.href}?data=${encodedData}`;
+        prompt("공유할 링크를 복사하세요:", url);
+    }
+
+    // 페이지 로드 시 DB 열기
+    openDB();
 </script>
 
 </body>
