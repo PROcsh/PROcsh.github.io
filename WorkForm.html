@@ -194,7 +194,7 @@
 </form>
 
 <script>
-    // 로컬 저장소에 저장된 근무표 로드
+    // 페이지 로드 시 로컬 저장소에 저장된 데이터가 있으면 불러오기
     window.onload = function() {
         const savedData = localStorage.getItem("workerData");
         if (savedData) {
@@ -260,7 +260,9 @@
             });
         }
 
+        // 로컬 저장소에 데이터 저장
         localStorage.setItem("workerData", JSON.stringify(workers));
+        alert("저장되었습니다!"); // 저장 완료 후 알림
     }
 
     function shareLink() {
@@ -280,16 +282,6 @@
         const link = `${window.location.href}?data=${workersJson}`;
         prompt("이 링크를 복사해서 공유하세요:", link);
     }
-
-    // URL에서 쿼리 파라미터로 데이터 로드
-    window.onload = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const data = urlParams.get('data');
-        if (data) {
-            const workers = JSON.parse(decodeURIComponent(data));
-            workers.forEach(worker => addRowToTable(worker));
-        }
-    };
 </script>
 
 </body>
