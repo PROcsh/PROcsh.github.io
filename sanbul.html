@@ -6,7 +6,7 @@
     <title>산불 일일상황 근무표</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body {
+         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f8f9fc;
             margin: 0;
@@ -91,7 +91,7 @@
             color: #666;
         }
 
-        .form-row input, .form-row textarea {
+        .form-row input {
             padding: 12px;
             font-size: 16px;
             border: 1px solid #ccc;
@@ -101,7 +101,7 @@
             transition: border-color 0.3s ease;
         }
 
-        .form-row input:focus, .form-row textarea:focus {
+        .form-row input:focus {
             border-color: #4a90e2;
         }
 
@@ -160,7 +160,7 @@
                 <th>근무장소</th>
                 <th>산불위기경보단계</th>
                 <th>산불지수 예측</th>
-                <th>공지사항</th>
+                <th>개인임무</th>
                 <th>삭제</th>
             </tr>
         </thead>
@@ -171,7 +171,7 @@
     <!-- 근무자 추가 폼 -->
     <form id="workerForm">
         <div class="form-row">
-            <h2>근무입력</h2>
+            <h2>산불근무 입력</h2>
             <div class="half">
                 <label for="date">날짜:</label>
                 <input type="date" id="date" required>
@@ -206,15 +206,15 @@
             </div>
 
             <div class="half">
-                <label for="notice">공지사항:</label>
+                <label for="notice">개인임무:</label>
                 <input id="notice" placeholder="공지사항을 입력하세요" required>
             </div>
           
             <div class="button-group">
                 <!-- 버튼의 type을 button으로 설정 -->
                 <button type="button" onclick="addWorker()">추가</button>
-                <button type="button" onclick="saveToExcel()">파일저장</button>
                 <button type="button" onclick="shareLink()">공유</button>
+                <button type="button" onclick="saveToExcel()">파일저장</button>               
             </div>
         </div>
     </form>
@@ -300,6 +300,7 @@
     function addRowToTable(worker) {
         const tableBody = document.getElementById('workerTable');
         const row = document.createElement('tr');
+        row.setAttribute('data-id', worker.id);  // id를 data-id로 설정
 
         row.innerHTML = `
             <td>${worker.date}</td>
@@ -321,9 +322,58 @@
         const store = transaction.objectStore('workers');
         store.delete(id);
 
+        // 삭제된 근무자 ID 추적
+        deletedWorkers.push(id);
+
         // 삭제 후 테이블에서 해당 행 제거
         const row = document.querySelector(`tr[data-id="${id}"]`);
         row.remove();
+    }
+
+    // 공유 기능: 데이터 클립보드에 복사
+    function shareLink() {
+        let tableData = "날짜, 근무시간, 근무자, 근무장소, 산불위기경보단계, 산불지수 예측, 공지사항\n";
+        const rows = document.querySelectorAll("#workerTable tr");
+        rows.forEach(row => {
+            const columns = row.querySelectorAll("td");
+            let rowData = [];
+            columns.forEach(col => rowData.push(col.textContent.trim()));
+            tableData += rowData.join(", ") + "\n";
+        });
+
+        navigator.clipboard.writeText(tableData).then(() => {
+            alert("근무표가 클립보드에 복사되었습니다.");
+        }).catch(err => {
+            alert("클립보드 복사 실패: " + err);
+        });
+    }
+
+    // 파일 저장 기능: Excel 파일로 저장 (삭제된 항목 제외)
+    function saveToExcel() {
+        const tableData = [];
+        const headers = ["날짜", "근무 시간", "근무자", "근무장소", "산불위기경보단계", "산불지수 예측", "공지사항"];
+        tableData.push(headers);
+
+        // 테이블에서 데이터 읽어오기 (삭제된 항목 제외)
+        const rows = document.querySelectorAll("#workerTable tr");
+        rows.forEach(row => {
+            const id = row.getAttribute('data-id');
+            if (deletedWorkers.includes(parseInt(id))) return;  // 삭제된 항목 제외
+
+            const columns = row.querySelectorAll("td");
+            let rowData = [];
+            columns.forEach(col => rowData.push(col.textContent.trim()));
+            tableData.push(rowData);
+        });
+
+        // 오늘 날짜를 포함한 파일명 생성
+        const today = new Date().toISOString().split('T')[0]; // yyyy-MM-dd 형식
+        const ws = XLSX.utils.aoa_to_sheet(tableData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "근무표");
+
+        // 엑셀 파일로 다운로드
+        XLSX.writeFile(wb, `산불_근무표_${today}.xlsx`);
     }
 
     // 페이지 로드 시 DB 열기
