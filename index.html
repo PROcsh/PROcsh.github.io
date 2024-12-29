@@ -93,12 +93,12 @@
         }
 
     /*위치 폼의 중앙정렬*/
-      .locationForm {
-           text-align: center;
-           display: flex;
-           flex-direction: colum;
-           align-items: center; /* 수평 중앙 */
-           justify-content: center; /* 수평 중앙 */
+        .locationForm {
+             text-align: center;
+             display: flex;
+             flex-direction: colum;
+             align-items: center; /* 수평 중앙 */
+             justify-content: center; /* 수평 중앙 */
         }
     </style>
 
@@ -107,6 +107,8 @@
 <body>
   
 <!-- 지도 버튼 표시 섹션 -->
+    <h1>지도 위치 및 좌표</h1>
+    <div class="container">
     <form id="locationForm">
         <button type="button" id="getLocation">내 위치 확인</button>
         <div id="map" style="width: 100%; height: 400px; margin-top: 10px;"></div>
@@ -448,4 +450,3 @@
     
 </body>
 </html>
-
