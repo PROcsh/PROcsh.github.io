@@ -95,7 +95,7 @@
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=g2u4orbiqf"></script>
 </head>
 <body>
-    
+  
 <!-- 탐방객 안전사고 처리 본문 표시 섹션 -->
 <h1>탐방객 안전사고 처리 현황</h1>
 <div class="container">
@@ -256,7 +256,7 @@
                 <td><textarea name="특이사항" rows="4"></textarea></td>
             </tr>
         </table>
-        <button type="submit">임시저장 및 다운로드 </button>
+        <button type="submit">저장 및 인쇄 </button>
     </form>
     
 <!-- 지도 버튼 표시 섹션 -->
@@ -272,7 +272,23 @@
         <br>
         <a id="downloadExcel" style="display: none;">엑셀 파일 다운로드</a><br>
         <a id="downloadText" style="display: none;">텍스트 파일 다운로드</a><br> 
+        <button id="printButton">저장 데이터 인쇄</button>       
     </div>
+  
+<!-- 인쇄 기능 추가 -->
+<script>
+    document.getElementById('printButton').addEventListener('click', function () {
+        const printContent = document.getElementById('savedData').innerHTML;
+        const printWindow = window.open('', '', 'height=600,width=800');
+        printWindow.document.write('<html><head><title>탐방객 안전사고 처리 현황 인쇄</title>');
+        printWindow.document.write('<style>body{font-family: Arial, sans-serif;}</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(printContent);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    });
+</script>
 
 
  <!-- 탐방객 안전사고 처리 현황 저장 데이터 표시 섹션 -->   
@@ -352,7 +368,7 @@
         const textUrl = URL.createObjectURL(textFile);
         const downloadTextLink = document.getElementById('downloadText');
         downloadTextLink.href = textUrl;
-        downloadTextLink.download = 'incident_data.txt';
+        downloadTextLink.download = '안전사고일지_data.txt';
         downloadTextLink.style.display = 'block';
 
         // Prepare CSV file
@@ -361,7 +377,7 @@
         const csvUrl = URL.createObjectURL(csvFile);
         const downloadExcelLink = document.getElementById('downloadExcel');
         downloadExcelLink.href = csvUrl;
-        downloadExcelLink.download = 'incident_data.csv';
+        downloadExcelLink.download = '안전사고일지_data.csv';
         downloadExcelLink.style.display = 'block';
     });
 
@@ -421,3 +437,4 @@
     
 </body>
 </html>
+
