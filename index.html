@@ -91,10 +91,27 @@
             width: 100%;
             height: 400px; /* 높이를 설정하세요 */
         }
+ /*위치 폼의 중앙정렬*/
+ .locationForm {
+      text-align: center;
+      display: flex;
+      flex-direction: colum;
+      align-items: center; /* 수평 중앙 */
+      justify-content: center; /* 수평 중앙 */
+     }
     </style>
+
     <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=g2u4orbiqf"></script>
 </head>
 <body>
+
+  
+<!-- 지도 버튼 표시 섹션 -->
+    <form id="locationForm">
+        <button type="button" id="getLocation">내 위치 확인</button>
+        <div id="map" style="width: 100%; height: 400px; margin-top: 10px;"></div>
+    </form>
+
   
 <!-- 탐방객 안전사고 처리 본문 표시 섹션 -->
 <h1>탐방객 안전사고 처리 현황</h1>
@@ -258,12 +275,7 @@
         </table>
         <button type="submit">저장 및 인쇄 </button>
     </form>
-    
-<!-- 지도 버튼 표시 섹션 -->
-    <form id="locationForm">
-        <button type="button" id="getLocation">내 위치 확인</button>
-        <div id="map" style="width: 100%; height: 400px; margin-top: 10px;"></div>
-    </form>
+  
 
 <!-- 탐방객 안전사고 처리 현황 저장 데이터 표시 섹션 -->
     <div id="savedData" style="display: none;">
