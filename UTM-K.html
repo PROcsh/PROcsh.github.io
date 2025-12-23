@@ -1,0 +1,119 @@
+<!--좌표 국가지점번호 변환-->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>좌표 to 국가지점번호 변환</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.7.5/proj4.js"></script>
+</head>
+<body>
+    <h3>좌표를 국가지점번호 변환</h3>
+    <label for="lat">WGS84 위도:</label>
+    <input type="text" id="lat" placeholder="위도 입력">
+    <br>
+    <label for="lon">WGS84 경도:</label>
+    <input type="text" id="lon" placeholder="경도 입력">
+    <br>
+    <label for="epsg">EPSG 코드 선택:</label>
+    <select id="epsg">
+        <option value="5179">UTM-K (GRS80) (EPSG:5179)</option>
+        <option value="5178">UTM-K (Bessel) (EPSG:5178)</option>        
+    </select>
+    <br>
+    <button id="convert">변환하기</button>
+    <h3>변환 결과</h3>
+    <p id="result"></p>
+
+    <script>
+        // EPSG 정의
+        proj4.defs("EPSG:5178", "+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=bessel +units=m +no_defs +towgs84=-115.80,474.99,674.11,1.16,-2.31,-1.63,6.43");
+        proj4.defs("EPSG:5179", "+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs");
+
+        document.getElementById('convert').addEventListener('click', function() {
+            const lat = parseFloat(document.getElementById('lat').value);
+            const lon = parseFloat(document.getElementById('lon').value);
+            const selectedEpsg = document.getElementById('epsg').value;
+
+            if (isNaN(lat) || isNaN(lon)) {
+                document.getElementById('result').textContent = "유효한 좌표를 입력하세요.";
+                return;
+            }
+
+            // WGS84에서 선택된 EPSG로 변환
+            const utmK = proj4("WGS84", `EPSG:${selectedEpsg}`, [lon, lat]);
+
+            // x와 y의 앞자리 숫자 추출
+            const xValue = Math.floor(utmK[0]);
+            const yValue = Math.floor(utmK[1]);
+
+            // 한글 매핑
+            const xMapping = {
+                7: '가',
+                8: '나',
+                9: '다',
+                10: '라',
+                11: '마',
+                12: '바',
+                13: '사'
+            };
+
+            const yMapping = {
+                13: '가',
+                14: '나',
+                15: '다',
+                16: '라',
+                17: '마',
+                18: '바',
+                19: '사',
+                20: '아'
+            };
+
+            // 앞자리 숫자 결정
+            const firstDigitX = Math.floor(xValue / 100000); // x의 앞자리
+            const firstDigitY = Math.floor(yValue / 100000); // y의 앞자리
+
+            // 매핑된 한글 결정
+            const xOutput = xMapping[firstDigitX] || '';
+            const yOutput = yMapping[firstDigitY] || '';
+
+            // 결과 출력
+            document.getElementById('result').textContent = `E 좌표(X): ${utmK[0]} (${xOutput}), N 좌표(Y): ${utmK[1]} (${yOutput})`;
+        });
+    </script>
+
+    <!-- UTM-K to WGS84 변환 섹션 -->
+<h3>국가지점번호 좌표변환</h3>
+<label for="utmX">UTM-K E 좌표:</label>
+<input type="text" id="utmX" placeholder="E 좌표 입력">
+<br>
+동향값 7:가, 8:나, 9:다, 10:라, 11:마, 12:바, 13:사
+<br>
+<label for="utmY">UTM-K N 좌표:</label>
+<input type="text" id="utmY" placeholder="N 좌표 입력">
+<br>
+북향값 13:가, 14:나, 15:다, 16:라, 17:마, 18:바, 19:사, 20:아  
+<br>
+<button id="convertToWGS84">변환하기</button>
+<h4>변환 결과</h4>
+<p id="wgs84Result"></p>
+
+<script>
+    document.getElementById('convertToWGS84').addEventListener('click', function() {
+        const utmX = parseFloat(document.getElementById('utmX').value);
+        const utmY = parseFloat(document.getElementById('utmY').value);
+
+        if (isNaN(utmX) || isNaN(utmY)) {
+            document.getElementById('wgs84Result').textContent = "유효한 UTM-K 좌표를 입력하세요.";
+            return;
+        }
+
+        // UTM-K에서 WGS84로 변환
+        const wgs84 = proj4("EPSG:5179", "WGS84", [utmX, utmY]);
+
+        document.getElementById('wgs84Result').textContent = `위도: ${wgs84[1].toFixed(6)}, 경도: ${wgs84[0].toFixed(6)}`;
+    });
+</script>
+    
+   </body>
+</html>
