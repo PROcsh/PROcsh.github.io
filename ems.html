@@ -1,0 +1,166 @@
+<!DOCTYPE html> 
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>산악구조&병원 공유</title>
+    <!-- Inter 폰트와 Tailwind CSS 로딩 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s ease-in-out;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+<div class="form-container bg-white p-8 rounded-2xl shadow-xl">
+    <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">산악구조&병원 공유</h1>
+    <p class="text-center text-gray-500 mb-8">산악구조&병원 상황공유 내용을 기록하고 저장합니다.</p>
+
+    <form id="recordForm">
+        <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <!-- 환자 정보 -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">환자 정보</h2>
+                <div class="mb-4">
+                    <label for="patientName" class="text-gray-600">환자 이름</label>
+                    <input type="text" id="patientName" name="patientName" placeholder="환자 이름" required class="rounded-lg">
+                </div>
+                <div>
+                    <label for="dob" class="text-gray-600">생년월일</label>
+                    <input type="date" id="dob" name="dob" required class="rounded-lg">
+              </div>             
+            </div>
+
+            <!-- 상황 정보 -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">상황 정보</h2>
+                <div class="mb-4">
+                    <label for="incidentTime" class="text-gray-600">발생 시간</label>
+                    <input type="datetime-local" id="incidentTime" name="incidentTime" required class="rounded-lg">
+                </div>
+                <div class="mb-4">
+                    <label for="location" class="text-gray-600">장소</label>
+                    <input type="text" id="location" name="location" placeholder="예: OO동 123-45" required class="rounded-lg">
+                </div>
+                <div>
+                    <label for="chiefComplaint" class="text-gray-600">주 증상</label>
+                    <input type="text" id="chiefComplaint" name="chiefComplaint" placeholder="예: 호흡곤란, 가슴 통증" required class="rounded-lg">
+                </div>
+            </div>
+        </div>
+
+        <!-- 의료지도 내용 -->
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">병원전달 내용</h2>
+            <div class="mb-4">
+                <label for="doctorName" class="text-gray-600">이송 병원</label>
+                <input type="text" id="doctorName" name="doctorName" placeholder="병원이름" required class="rounded-lg">
+            </div>
+            <div>
+                <label for="guidanceContent" class="text-gray-600">전달 내용</label>
+                <textarea id="guidanceContent" name="guidanceContent" rows="4" placeholder="병원인계 사항: 발생기전/손상/징후/현장처치/상태/과거력/활력징후" required class="rounded-lg"></textarea>
+            </div>
+        </div>
+
+        <!-- 기록자 정보 -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">기록자</h2>
+            <div>
+                <label for="emtName" class="text-gray-600">응급구조사 이름</label>
+                <input type="text" id="emtName" name="emtName" placeholder="응급구조사 성명" required class="rounded-lg">
+            </div>
+        </div>
+
+        <!-- 저장 버튼 -->
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+            기록 저장하기
+        </button>
+
+        <!-- 카카오톡 오픈채팅 버튼 -->
+        <a href="https://open.kakao.com/o/xxxxxxx" target="_blank" 
+           class="block w-full mt-4 bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-4 rounded-lg text-center transition duration-200">
+            💬 카카오톡 오픈채팅방 참여하기
+        </a>
+
+        <!-- 결과 메시지 표시 영역 -->
+        <div id="resultMessage" class="mt-4 text-center"></div>
+    </form>
+</div>
+
+<script>
+    // 이 URL을 Google Apps Script를 웹 앱으로 게시한 후 얻은 URL로 바꿔주세요.
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyI4VZUHL5QYFVgGS15epiPYs-0z8DMZIOmvNNnYx_5EsggSx8n6-44zprKS2Quf9JNLA/exec'; 
+
+    const form = document.getElementById('recordForm');
+    const resultMessage = document.getElementById('resultMessage');
+
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault(); // 폼 제출 기본 동작 방지
+
+        resultMessage.textContent = '데이터를 저장하는 중입니다...';
+        resultMessage.className = 'mt-4 text-center text-gray-500';
+
+        // 폼 데이터를 객체로 변환
+        const formData = {
+            patientName: form.patientName.value,
+            dob: form.dob.value,
+            incidentTime: form.incidentTime.value,
+            location: form.location.value,
+            chiefComplaint: form.chiefComplaint.value,
+            doctorName: form.doctorName.value,
+            guidanceContent: form.guidanceContent.value,
+            emtName: form.emtName.value,
+            timestamp: new Date().toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+        };
+
+        try {
+            const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors', // CORS 문제 방지를 위해 no-cors 모드 사용
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            // no-cors 모드는 응답 상태를 확인할 수 없으므로, 메시지를 긍정적으로 표시
+            resultMessage.textContent = '✅ 기록이 성공적으로 저장되었습니다!';
+            resultMessage.className = 'mt-4 text-center text-green-600 font-medium';
+            form.reset(); // 폼 초기화
+
+        } catch (error) {
+            console.error('Error:', error);
+            resultMessage.textContent = '🚨 기록 저장 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.';
+            resultMessage.className = 'mt-4 text-center text-red-600 font-medium';
+        }
+    });
+</script>
+
+</body>
+</html>
