@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무등산 산사태 관리 시스템</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            background-color: #f3f4f6;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+         #map {
+    height: 80vh; /* 화면 높이 */
+  width: 100%;  /* 가로는 꽉 차게 */
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+        .info-panel {
+            max-height: 100%; /* 부모 컨테이너에 맞춰 100% */
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="p-4 sm:p-8">
+        <!-- 헤더 -->
+        <header class="text-center">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-gray-800 tracking-tight">무등산 산사태 관리 시스템</h1>
+            <p class="mt-2 text-lg text-gray-600">위성 지도를 통해 산사태 위험 지역을 모니터링하고 관리합니다.</p>
+        </header>
+    </div>
+
+    <!-- 지도 및 제어판 (화면의 남은 공간을 차지하도록 flex-1 적용) -->
+    <main class="flex flex-col lg:flex-row p-4 sm:p-8 pt-0 gap-8 overflow-hidden fixed-container">
+         <!-- 지도 컨테이너 -->
+<div id="map-container" class="relative w-full h-screen">
+    <div id="map" class="w-full h-full"></div>
+
+    <!-- 패널을 지도 위에 띄우기 -->
+    <div class="absolute top-4 right-4 w-72 bg-white p-6 rounded-xl shadow-lg space-y-6">
+        <h3>[ 무등산국립공원 산사태 관리현황 ]</h3><br>
+          동구 2개 / 북구 7개<br>
+          총 관리계소: 9개
+    </div>
+</div>
+
+        <!-- 제어판 & 정보 패널 -->
+<div class="w-1/6 bg-white p-4 rounded-xl shadow-lg space-y-4 flex-shrink-0">
+  <div class="space-y-3">
+    <h2 class="text-xl font-bold text-gray-800">지도 제어</h2>
+
+    <!-- 좌표 입력 기능 -->
+    <div>
+      <input type="text" id="latInput" placeholder="위도 (예: 37.5)"
+        class="w-full px-2 py-1 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+      <input type="text" id="lngInput" placeholder="경도 (예: 127.0)"
+        class="w-full mt-1 px-2 py-1 border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+      <button id="addByCoordBtn"
+        class="w-full mt-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm transition-colors duration-200">
+        좌표로 위험 지역 표시
+      </button>
+    </div>
+
+    <hr class="border-gray-200">
+
+    <button id="addPointBtn"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm transition-colors duration-200">
+      지도에서 클릭하여 표시
+    </button>
+    <button id="toggleMapTypeBtn"
+      class="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm transition-colors duration-200">
+      지도/위성 전환
+    </button>
+
+    <button onclick="window.open('https://www.safekorea.go.kr/idsiSFK/neo/main/main.html', '_blank', 'noopener')"
+      class="w-full mt-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm">
+      국민재난안전포털
+    </button>
+
+    <button onclick="window.open('https://sansatai.forest.go.kr/gis/main.do', '_blank', 'noopener')"
+      class="w-full mt-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm">
+      산사태정보시스템
+    </button>
+
+    <button onclick="window.open('https://emtcsh.github.io/Boards.html', '_blank', 'noopener')"
+      class="w-full mt-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm">
+      비상대응 상황판
+    </button>
+
+    <button onclick="window.open('https://emtcsh.github.io/out.html', '_blank', 'noopener')" 
+      class="w-full mt-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow-md text-sm">
+      탐방로 통제정보
+    </button>
+  </div>
+
+  <hr class="border-gray-200">
+
+  <div class="space-y-2">
+    <h3 class="text-xl font-bold text-gray-800">산사태 지정 정보</h3>
+    <div id="infoPanel"
+      class="info-panel bg-gray-50 p-3 rounded-lg border border-gray-200 text-gray-700 text-sm">
+      마커를 클릭하여 상세 정보를 확인하세요.
+    </div>
+  </div>
+</div>
+    <!-- Naver Maps API 로드 -->
+    <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=g2u4orbiqf"></script>
+    <script>
+        // 이 부분을 실제 Naver Maps API 클라이언트 ID로 교체하세요.
+        const naverClientId = "g2u4orbiqf";
+
+        // 더미 데이터: 실제로는 백엔드나 데이터베이스에서 가져와야 합니다.
+        const landslideData = [
+            { lat: 35.129108, lng: 126.970008, risk: "보통", date: "2014-11-28", description: "동구 운림동 산 143-1 임." },
+            { lat: 35.123325, lng: 126.960225, risk: "보통", date: "2024-07-15", description: "동구 운림동 산 212 임." },
+            { lat: 35.167692, lng: 126.977608, risk: "보통", date: "2024-07-15", description: "북구 금곡동 994 답." },
+            { lat: 35.162464, lng: 126.963142, risk: "보통", date: "2024-07-15", description: "북구 청풍동 179-3 답." },
+            { lat: 35.161394, lng: 126.962547, risk: "보통", date: "2024-07-15", description: "북구 청풍동 200 전." },        
+            { lat: 35.172389, lng: 127.015358, risk: "보통", date: "2024-07-15", description: "북구 충효동 산 24 임." },
+            { lat: 35.158475, lng: 126.962533, risk: "보통", date: "2024-07-15", description: "북구 화암동 397-1." },
+            { lat: 35.155253, lng: 126.956025, risk: "보통", date: "2015-08-18", description: "화암동 산 95 임." },
+            { lat: 35.154136, lng: 126.957417, risk: "보통", date: "2015-08-18", description: "화암동 산 97 임." },
+        ];
+
+        let map;
+        let markers = [];
+        let isSatellite = false;
+        let isAddingPoint = false; // 새로운 상태 변수
+
+        function initMap() {
+            // 지도 초기화
+            map = new naver.maps.Map('map', {
+                center: new naver.maps.LatLng(35.119158, 127.003814), // 서석대 중심
+                zoom: 13,
+                zoomControl: true,
+                mapTypeControl: true
+            });
+
+            // 초기 마커 렌더링
+            renderMarkers();
+
+            // 지도 클릭 이벤트
+            naver.maps.Event.addListener(map, 'click', function(e) {
+                if (isAddingPoint) {
+                    const newLat = e.coord.y;
+                    const newLng = e.coord.x;
+
+                    // 새로운 더미 데이터 추가
+                    const newPoint = {
+                        lat: newLat,
+                        lng: newLng,
+                        risk: "보통", // 기본값 설정
+                        date: new Date().toISOString().slice(0, 10),
+                        description: "새롭게 추가된 위험 지역"
+                    };
+                    landslideData.push(newPoint);
+
+                    // 마커 다시 렌더링
+                    renderMarkers();
+                    isAddingPoint = false; // 상태 초기화
+
+                    // 버튼 및 패널 텍스트 복구
+                    document.getElementById("addPointBtn").textContent = "지도에서 클릭하여 추가";
+                    document.getElementById("addPointBtn").classList.remove("bg-red-500", "hover:bg-red-600");
+                    document.getElementById("addPointBtn").classList.add("bg-blue-600", "hover:bg-blue-700");
+                    document.getElementById("infoPanel").innerHTML = "새로운 위험 지점이 추가되었습니다. 마커를 클릭하여 상세 정보를 확인하세요.";
+                }
+            });
+        }
+
+        function renderMarkers() {
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
+
+            landslideData.forEach(data => {
+                const marker = new naver.maps.Marker({
+                    position: new naver.maps.LatLng(data.lat, data.lng),
+                    map: map,
+                    title: `위험도: ${data.risk}`,
+                    icon: getMarkerIcon(data.risk)
+                });
+
+                // 마커 클릭 시 정보 패널 업데이트
+                naver.maps.Event.addListener(marker, 'click', () => {
+                    const infoPanel = document.getElementById("infoPanel");
+                    infoPanel.innerHTML = `
+                        <h3 class="text-xl font-semibold">${data.date}</h3>
+                        <p class="mt-2 text-base"><strong>위험도:</strong> <span class="font-bold text-${getRiskColor(data.risk)}-600">${data.risk}</span></p>
+                        <p class="mt-1 text-base"><strong>위치:</strong> ${data.lat}, ${data.lng}</p>
+                        <p class="mt-1 text-base"><strong>설명:</strong> ${data.description}</p>
+                    `;
+                });
+                markers.push(marker);
+            });
+        }
+
+        function getMarkerIcon(risk) {
+            let color = "";
+            switch(risk) {
+                case "높음": color = "red"; break;
+                case "보통": color = "orange"; break;
+                case "낮음": color = "yellow"; break;
+                default: color = "grey"; break;
+            }
+            // 위험도에 따라 다른 아이콘 사용 (Naver Maps는 별도의 아이콘 URL 제공)
+            // 여기서는 임시로 기본 아이콘을 사용하고, 위험도를 색상으로만 구분합니다.
+            return {
+                url: `https://naver-maps.github.io/maps.js/docs/img/example/pin_default.png`,
+                size: new naver.maps.Size(32, 50),
+                origin: new naver.maps.Point(0, 0),
+                anchor: new naver.maps.Point(16, 50)
+            };
+        }
+        
+        // Tailwind CSS 클래스를 위한 위험도 색상 매핑
+        function getRiskColor(risk) {
+            switch(risk) {
+                case "높음": return "red";
+                case "보통": return "orange";
+                case "낮음": return "yellow";
+                default: return "gray";
+            }
+        }
+
+        // 이벤트 리스너
+        document.getElementById("addPointBtn").addEventListener("click", () => {
+            isAddingPoint = true;
+            document.getElementById("addPointBtn").textContent = "지도에서 위치를 클릭하세요...";
+            document.getElementById("addPointBtn").classList.remove("bg-blue-600", "hover:bg-blue-700");
+            document.getElementById("addPointBtn").classList.add("bg-red-500", "hover:bg-red-600");
+            document.getElementById("infoPanel").innerHTML = "<strong class='text-red-500'>지도 클릭 모드 활성화됨.</strong><br>지도에서 마커를 추가할 위치를 클릭하세요.";
+        });
+        
+        // 새롭게 추가된 좌표 입력 버튼에 대한 이벤트 리스너
+        document.getElementById("addByCoordBtn").addEventListener("click", () => {
+            const lat = parseFloat(document.getElementById("latInput").value);
+            const lng = parseFloat(document.getElementById("lngInput").value);
+
+            if (isNaN(lat) || isNaN(lng)) {
+                document.getElementById("infoPanel").innerHTML = "<strong class='text-red-500'>오류:</strong> 올바른 위도와 경도 값을 입력하세요.";
+                return;
+            }
+
+            const newPoint = {
+                lat: lat,
+                lng: lng,
+                risk: "보통",
+                date: new Date().toISOString().slice(0, 10),
+                description: "좌표로 추가된 위험 지역"
+            };
+            landslideData.push(newPoint);
+
+            renderMarkers();
+
+            document.getElementById("infoPanel").innerHTML = "새로운 위험 지점이 추가되었습니다. 마커를 클릭하여 상세 정보를 확인하세요.";
+            document.getElementById("latInput").value = "";
+            document.getElementById("lngInput").value = "";
+        });
+
+        document.getElementById("toggleMapTypeBtn").addEventListener("click", () => {
+            isSatellite = !isSatellite;
+            if (isSatellite) {
+                map.setMapTypeId(naver.maps.MapTypeId.SATELLITE);
+            } else {
+                map.setMapTypeId(naver.maps.MapTypeId.NORMAL);
+            }
+        });
+
+        // 페이지 로드 시 지도 초기화
+        window.addEventListener('DOMContentLoaded', initMap);
+    </script>
+</body>
+</html>
