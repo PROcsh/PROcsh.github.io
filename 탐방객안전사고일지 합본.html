@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> 📌 탐방객 안전사고 처리 현황 </title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4CAF50;
+            font-size: 24px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        input[type="text"], input[type="datetime-local"], input[type="date"], select, textarea {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        textarea {
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #savedData {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            width: 100%;
+            max-width: 800px;
+        }
+        #savedData h2 {
+            text-align: center;
+            color: #4CAF50;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #d9534f; /* 강조 색상 */
+        }
+    </style>
+</head>
+<body>
+
+<h1>탐방객 안전사고 처리 현황</h1>
+
+<div class="container">
+    <form id="incidentForm">
+        <table>
+            <tr>
+                <th>사고일시</th>
+                <td><input type="datetime-local" name="사고일시"></td>
+            </tr>
+            <tr>
+                <th>사고발생 접수경로</th>
+                <td>
+                    <select name="접수경로">
+                        <option value="119상황전파">119상황전파</option>
+                        <option value="사무소전화접수">사무소전화접수</option>
+                        <option value="현장접수">현장접수</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>출동시간</th>
+                <td><input type="text" name="출동시간" placeholder="HH:MM" pattern="^(2[0-3]|[01]?[0-9]):[0-5][0-9]$"></td>
+            </tr>
+            <tr>
+                <th>도착시간</th>
+                <td><input type="text" name="도착시간" placeholder="HH:MM" pattern="^(2[0-3]|[01]?[0-9]):[0-5][0-9]$"></td>
+            </tr>
+            <tr>
+                <th>완료시간</th>
+                <td><input type="text" name="완료시간" placeholder="HH:MM" pattern="^(2[0-3]|[01]?[0-9]):[0-5][0-9]$"></td>
+            </tr>
+            <tr>
+                <th>출동거리</th>
+                <td><input type="text" name="출동거리"></td>
+            </tr>
+            <tr>
+                <th>사고장소</th>
+                <td><input type="text" name="사고장소"></td>
+            </tr>
+            <tr>
+                <th>위도</th>
+                <td><input type="text" name="위도"></td>
+            </tr>
+            <tr>
+                <th>경도</th>
+                <td><input type="text" name="경도"></td>
+            </tr>
+            <tr>
+                <th>장소구분</th>
+                <td><input type="text" name="장소구분"></td>
+            </tr>
+            <tr>
+                <th>신고자 인적사항</th>
+                <td>
+                    성명: <input type="text" name="신고자성명"><br>
+                    성별: <select name="신고자성별">
+                        <option value="남">남</option>
+                        <option value="여">여</option>
+                        <option value="미상">미상</option>
+                    </select><br>
+                    연락처: <input type="text" name="신고자연락처">
+                </td>
+            </tr>
+            <tr>
+                <th>사고자 인적사항</th>
+                <td>
+                    성명: <input type="text" name="사고자성명"><br>
+                    성별: <select name="사고자성별">
+                        <option value="남">남</option>
+                        <option value="여">여</option>
+                        <option value="미상">미상</option>
+                    </select><br>
+                    생년월일: <input type="date" name="사고자생년월일"><br>
+                    연락처: <input type="text" name="사고자연락처"><br>
+                    주소: <input type="text" name="사고자주소">
+                </td>
+            </tr>
+            <tr>
+                <th>사고원인</th>
+                <td><input type="text" name="사고원인"></td>
+            </tr>
+            <tr>
+                <th>부상유형</th>
+                <td><input type="text" name="부상유형"></td>
+            </tr>
+            <tr>
+                <th>사고경위</th>
+                <td><textarea name="사고경위" rows="4"></textarea></td>
+            </tr>
+            <tr>
+                <th>조치내용(시간대별)</th>
+                <td><textarea name="조치내용" rows="4"></textarea></td>
+            </tr>
+            <tr>
+                <th>동원인원</th>
+                <td><input type="text" name="동원인원"></td>
+            </tr>
+            <tr>
+                <th>동원장비</th>
+                <td><input type="text" name="동원장비"></td>
+            </tr>
+            <tr>
+                <th>병원이송</th>
+                <td>
+                    <select name="병원이송여부">
+                        <option value="예">예</option>
+                        <option value="아니오">아니오</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>음주여부</th>
+                <td>
+                    <select name="음주여부">
+                        <option value="아니오">아니오</option>
+                        <option value="예">예</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <th>특이사항</th>
+                <td><textarea name="특이사항" rows="4"></textarea></td>
+            </tr>
+        </table>
+        <button type="submit">제출 및 저장</button>
+    </form>
+
+    <div id="savedData">
+        <h2>탐방객 안전사고 처리 현황 저장 데이터</h2>
+        <div id="dataContent"></div>
+        <br>
+        <a id="downloadExcel" style="display: none;">엑셀 파일 다운로드</a>
+        <a id="downloadText" style="display: none;">텍스트 파일 다운로드</a><br>
+        <h5> 🐸 Beta Ver. 0.9.20. 국립공원 응급처치 연구회 최성현. E-mail: paramedic@knps.or.kr.</h5>
+        <h4> [공지] 페이지 새로고침 하면 저장 데이터는 없어집니다. 서버 저장 안됨. 개인 폰 및 컴퓨터에 저장 바람니다. </h4>
+    </div>
+</div>
+
+<script>
+    document.getElementById('incidentForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(event.target);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
+        
+        // Display the saved data without {}
+        const savedDataDiv = document.getElementById('savedData');
+        const dataContent = document.getElementById('dataContent');
+        let dataHtml = '';
+        
+        for (const [key, value] of Object.entries(data)) {
+            if (["사고일시", "출동시간", "도착시간", "완료시간", "위도", "경도", "사고장소", "부상유형", "사고경위", "병원이송여부"].includes(key)) {
+                dataHtml += `<strong class="highlight">${key}:</strong> ${value || '없음'}<br>`;
+            } else {
+                dataHtml += `${key}: ${value || '없음'}<br>`;
+            }
+        }
+        
+        dataContent.innerHTML = dataHtml;
+        savedDataDiv.style.display = 'block';
+
+        // Prepare text file
+        const textFile = new Blob([Object.entries(data).map(([key, value]) => `${key}: ${value || '없음'}`).join('\n')], { type: 'text/plain' });
+        const textUrl = URL.createObjectURL(textFile);
+        const downloadTextLink = document.getElementById('downloadText');
+        downloadTextLink.href = textUrl;
+        downloadTextLink.download = 'incident_data.txt';
+        downloadTextLink.style.display = 'block';
+
+        // Prepare CSV file
+        const csvData = Object.entries(data).map(([key, value]) => `${key},${value || '없음'}`).join('\n');
+        const csvFile = new Blob([csvData], { type: 'text/csv' });
+        const csvUrl = URL.createObjectURL(csvFile);
+        const downloadExcelLink = document.getElementById('downloadExcel');
+        downloadExcelLink.href = csvUrl;
+        downloadExcelLink.download = 'incident_data.csv';
+        downloadExcelLink.style.display = 'block';
+    });
+</script>
+
+</body>
+</html>
