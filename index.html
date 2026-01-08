@@ -5,43 +5,15 @@
 <title>📡 GPS 좌표 확인기</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- 좌표 변환 라이브러리 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mgrs/1.0.0/mgrs.min.js"></script>
 
 <style>
-body {
-  background:#111;
-  color:#fff;
-  font-family: Arial, sans-serif;
-  padding:20px;
-}
-h1 {
-  color:#00eaff;
-  text-align:center;
-}
-.status {
-  text-align:center;
-  font-size:14px;
-  color:#7dd3fc;
-  margin-bottom:10px;
-}
-button {
-  width:100%;
-  padding:14px;
-  font-size:18px;
-  background:#00eaff;
-  border:none;
-  border-radius:8px;
-  margin:10px 0;
-}
-.box {
-  background:#222;
-  padding:15px;
-  border-radius:8px;
-  margin-top:10px;
-  line-height:1.6;
-}
+body { background:#111; color:#fff; font-family:Arial; padding:20px; }
+h1 { color:#00eaff; text-align:center; }
+.status { text-align:center; font-size:14px; color:#7dd3fc; margin-bottom:10px; }
+button { width:100%; padding:14px; font-size:18px; background:#00eaff; border:none; border-radius:8px; }
+.box { background:#222; padding:15px; border-radius:8px; margin-top:10px; }
 .label { color:#aaa; font-size:14px; }
 .value { font-size:17px; }
 </style>
@@ -54,131 +26,53 @@ button {
 
 <button onclick="getLocation()">📡 현재 위치 수신</button>
 
-<div class="box">
-  <div class="label">위도 / 경도 (DD)</div>
-  <div id="latlon" class="value">-</div>
-</div>
-
-<div class="box">
-  <div class="label">도분초 (DMS)</div>
-  <div id="dms" class="value">-</div>
-</div>
-
-<div class="box">
-  <div class="label">UTM-K (EPSG:5179)</div>
-  <div id="utmk" class="value">-</div>
-</div>
-
-<div class="box">
-  <div class="label">국가지점번호 (100m)</div>
-  <div id="national" class="value">-</div>
-</div>
-
-<div class="box">
-  <div class="label">군사좌표 (MGRS)</div>
-  <div id="mgrs" class="value">-</div>
-</div>
+<div class="box"><div class="label">위도 / 경도</div><div id="latlon" class="value">-</div></div>
+<div class="box"><div class="label">도분초 (DMS)</div><div id="dms" class="value">-</div></div>
+<div class="box"><div class="label">UTM-K</div><div id="utmk" class="value">-</div></div>
+<div class="box"><div class="label">국가지점번호</div><div id="national" class="value">-</div></div>
+<div class="box"><div class="label">군사좌표 (MGRS)</div><div id="mgrs" class="value">-</div></div>
 
 <script>
-/* ======================
-   EPSG:5179 정의
-====================== */
 proj4.defs("EPSG:5179",
-  "+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 " +
-  "+x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs"
+  "+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs"
 );
 
-/* ======================
-   GPS 수신
-====================== */
 function getLocation() {
   const status = document.getElementById("status");
-
-  if (!navigator.geolocation) {
-    alert("GPS 미지원 기기");
-    return;
-  }
-
   status.textContent = "📡 위성 수신중…";
 
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
-      const acc = Math.round(pos.coords.accuracy);
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const acc = Math.round(pos.coords.accuracy);
 
-      status.textContent = `✅ 수신 완료 (정확도 ±${acc}m)`;
-      processCoord(lat, lon);
-    },
-    err => {
-      status.textContent = "❌ GPS 수신 실패";
-      alert("GPS 수신 실패");
-    },
-    {
-      enableHighAccuracy: true,
-      timeout: 30000,
-      maximumAge: 0
-    }
-  );
+    status.textContent = `✅ 수신 완료 (±${acc}m)`;
+    processCoord(lat, lon);
+  }, () => {
+    status.textContent = "❌ GPS 수신 실패";
+  }, { enableHighAccuracy:true });
 }
 
-/* ======================
-   좌표 처리
-====================== */
 function processCoord(lat, lon) {
-  document.getElementById("latlon").innerText =
-    `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+  document.getElementById("latlon").innerText = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+  document.getElementById("dms").innerText = toDMS(lat, lon);
 
-  document.getElementById("dms").innerText =
-    toDMS(lat, lon);
-
-  const tm = wgs84ToUTMK(lat, lon);
-
-  document.getElementById("utmk").innerText =
-    `E ${Math.floor(tm.x)}  N ${Math.floor(tm.y)}`;
-
-  document.getElementById("national").innerText =
-    nationalPointFromUTMK(tm);
-
-  /* ✅ MGRS (안정 precision 4) */
-  try {
-    document.getElementById("mgrs").innerText =
-      mgrs.forward([lon, lat], 4);
-  } catch (e) {
-    document.getElementById("mgrs").innerText =
-      "MGRS 변환 실패";
-  }
-}
-
-/* ======================
-   도 → 도분초
-====================== */
-function dms(v) {
-  const deg = Math.floor(Math.abs(v));
-  const minFloat = (Math.abs(v) - deg) * 60;
-  const min = Math.floor(minFloat);
-  const sec = ((minFloat - min) * 60).toFixed(2);
-  return `${deg}° ${min}' ${sec}"`;
-}
-
-function toDMS(lat, lon) {
-  return `N ${dms(lat)} / E ${dms(lon)}`;
-}
-
-/* ======================
-   WGS84 → UTM-K
-====================== */
-function wgs84ToUTMK(lat, lon){
   const [x, y] = proj4("WGS84", "EPSG:5179", [lon, lat]);
-  return { x, y };
+  document.getElementById("utmk").innerText = `E ${Math.floor(x)} N ${Math.floor(y)}`;
+  document.getElementById("national").innerText = `${Math.floor(x/100)} ${Math.floor(y/100)}`;
+
+  // ✅ MGRS (정상)
+  document.getElementById("mgrs").innerText =
+    mgrs.forward([lon, lat]);
 }
 
-/* ======================
-   국가지점번호 (100m)
-====================== */
-function nationalPointFromUTMK(tm){
-  return `${Math.floor(tm.x / 100)} ${Math.floor(tm.y / 100)}`;
+function dms(v){
+  const d=Math.floor(Math.abs(v));
+  const m=Math.floor((Math.abs(v)-d)*60);
+  const s=(((Math.abs(v)-d)*60-m)*60).toFixed(2);
+  return `${d}° ${m}' ${s}"`;
 }
+function toDMS(lat, lon){ return `N ${dms(lat)} / E ${dms(lon)}`; }
 </script>
 
 </body>
