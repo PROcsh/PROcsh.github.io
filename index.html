@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>📡 GPS 좌표 확인인</title>
+<title>📡 GPS 좌표 확인기</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <!-- 좌표 변환 라이브러리 -->
@@ -108,7 +108,7 @@ function getLocation() {
       const acc = Math.round(pos.coords.accuracy);
 
       status.textContent = `✅ 수신 완료 (정확도 ±${acc}m)`;
-      processCoord(lat, lon, acc);
+      processCoord(lat, lon);
     },
     err => {
       status.textContent = "❌ GPS 수신 실패";
@@ -125,7 +125,7 @@ function getLocation() {
 /* ======================
    좌표 처리
 ====================== */
-function processCoord(lat, lon, acc) {
+function processCoord(lat, lon) {
   document.getElementById("latlon").innerText =
     `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
 
@@ -140,8 +140,14 @@ function processCoord(lat, lon, acc) {
   document.getElementById("national").innerText =
     nationalPointFromUTMK(tm);
 
-  document.getElementById("mgrs").innerText =
-    mgrs.forward([lon, lat], 5);
+  /* ✅ MGRS (안정 precision 4) */
+  try {
+    document.getElementById("mgrs").innerText =
+      mgrs.forward([lon, lat], 4);
+  } catch (e) {
+    document.getElementById("mgrs").innerText =
+      "MGRS 변환 실패";
+  }
 }
 
 /* ======================
@@ -168,7 +174,7 @@ function wgs84ToUTMK(lat, lon){
 }
 
 /* ======================
-   국가지점번호
+   국가지점번호 (100m)
 ====================== */
 function nationalPointFromUTMK(tm){
   return `${Math.floor(tm.x / 100)} ${Math.floor(tm.y / 100)}`;
