@@ -1,11 +1,10 @@
 {
-  "name": "현장 좌표 변환기 (GPS)",
-  "short_name": "좌표변환",
-  "start_url": "./",
+  "name": "오프라인 GPS 좌표 변환",
+  "short_name": "GPS 좌표",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#020617",
-  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#22c55e",
   "icons": [
     {
       "src": "icon-192.png",
