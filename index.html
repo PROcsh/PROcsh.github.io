@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mgrs/1.0.0/mgrs.min.js"></script>
 
 <style>
 body { background:#111; color:#fff; font-family:Arial; padding:20px; }
@@ -21,7 +20,7 @@ button { width:100%; padding:14px; font-size:18px; background:#00eaff; border:no
 
 <body>
 
-<h1>🆘 GPS 좌표 확인</h1>
+<h1>📡 GPS 좌표 확인</h1>
 <div id="status" class="status">📡 GPS 대기중…</div>
 
 <button onclick="getLocation()">📡 현재 위치 수신</button>
@@ -30,7 +29,6 @@ button { width:100%; padding:14px; font-size:18px; background:#00eaff; border:no
 <div class="box"><div class="label">도분초 (DMS)</div><div id="dms" class="value">-</div></div>
 <div class="box"><div class="label">UTM-K</div><div id="utmk" class="value">-</div></div>
 <div class="box"><div class="label">국가지점번호</div><div id="national" class="value">-</div></div>
-<div class="box"><div class="label">군사좌표 (MGRS)</div><div id="mgrs" class="value">-</div></div>
 
 <script>
 proj4.defs("EPSG:5179",
@@ -60,19 +58,18 @@ function processCoord(lat, lon) {
   const [x, y] = proj4("WGS84", "EPSG:5179", [lon, lat]);
   document.getElementById("utmk").innerText = `E ${Math.floor(x)} N ${Math.floor(y)}`;
   document.getElementById("national").innerText = `${Math.floor(x/100)} ${Math.floor(y/100)}`;
-
-  // ✅ MGRS (정상)
-  document.getElementById("mgrs").innerText =
-    mgrs.forward([lon, lat]);
 }
 
 function dms(v){
-  const d=Math.floor(Math.abs(v));
-  const m=Math.floor((Math.abs(v)-d)*60);
-  const s=(((Math.abs(v)-d)*60-m)*60).toFixed(2);
+  const d = Math.floor(Math.abs(v));
+  const m = Math.floor((Math.abs(v)-d)*60);
+  const s = (((Math.abs(v)-d)*60-m)*60).toFixed(2);
   return `${d}° ${m}' ${s}"`;
 }
-function toDMS(lat, lon){ return `N ${dms(lat)} / E ${dms(lon)}`; }
+
+function toDMS(lat, lon){
+  return `N ${dms(lat)} / E ${dms(lon)}`;
+}
 </script>
 
 </body>
