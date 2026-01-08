@@ -2,164 +2,199 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>🆘 현장 좌표 변환기 (GPS 오프라인)</title>
+<title>📡 오프라인 GPS 좌표 변환기</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#020617">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mgrs/1.0.0/mgrs.min.js"></script>
-
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  padding:16px;
-  font-family:system-ui,Arial;
-  background:#0f172a;
+body {
+  background:#111;
   color:#fff;
+  font-family: Arial, sans-serif;
+  padding:20px;
 }
-h1{font-size:20px;margin-bottom:12px;text-align:center}
-.card{
-  background:#020617;
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:12px;
-}
-button{
+h1 { color:#00eaff; }
+  h1 { text-align: center; }
+button {
   width:100%;
-  padding:18px;
-  margin-top:10px;
-  font-size:17px;
-  font-weight:700;
-  border:none;
-  border-radius:14px;
-  background:linear-gradient(135deg,#22c55e,#16a34a);
-  color:#020617;
-}
-pre{
-  white-space:pre-wrap;
-  line-height:1.6;
-  font-size:15px;
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:14px;
   padding:14px;
+  font-size:18px;
+  background:#00eaff;
+  border:none;
+  border-radius:8px;
+  margin:10px 0;
 }
-.small{font-size:13px;color:#94a3b8;text-align:center}
+.box {
+  background:#222;
+  padding:15px;
+  border-radius:8px;
+  margin-top:10px;
+  line-height:1.6;
+}
+.label { color:#aaa; font-size:14px; }
+.value { font-size:17px; }
 </style>
 </head>
 
 <body>
 
-<h1>🆘 현장 좌표 변환기 (GPS)</h1>
+<h1>🆘 오프라인 GPS 좌표 변환</h1>
 
-<div class="card">
-  <button onclick="getMyLocation()">📡 내 위치(GPS)</button>
+<button onclick="getLocation()">📡 현재 위치 수신</button>
+
+<div class="box">
+  <div class="label">위도 (도)</div>
+  <div id="lat" class="value">-</div>
+
+  <div class="label">경도 (도)</div>
+  <div id="lon" class="value">-</div>
 </div>
 
-<div class="card">
-  <pre id="result">GPS 버튼을 누르세요</pre>
+<div class="box">
+  <div class="label">도분초 (DMS)</div>
+  <div id="dms" class="value">-</div>
 </div>
 
-<p class="small">
-✔ 지도 없음 · ✔ 인터넷 불필요 · ✔ 위성(GPS)만 사용
-</p>
+<div class="box">
+  <div class="label">UTM-K</div>
+  <div id="utm" class="value">-</div>
+</div>
+
+<div class="box">
+  <div class="label">TM (Korea Central)</div>
+  <div id="tm" class="value">-</div>
+</div>
+
+<div class="box">
+  <div class="label">군사좌표 (MGRS)</div>
+  <div id="mgrs" class="value">-</div>
+</div>
 
 <script>
-/* TM / UTM-K (EPSG:5179) */
-proj4.defs("EPSG:5179",
-"+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 +x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs");
-
-const result = document.getElementById("result");
-
-/* DD → DMS */
-function toDMS(d){
-  const D = Math.floor(d);
-  const M = Math.floor((d - D) * 60);
-  const S = (((d - D) * 60 - M) * 60).toFixed(2);
-  return `${D}° ${M}′ ${S}″`;
-}
-
-/* 국가지점번호 */
-function national(x,y){
-  return `${Math.floor(x/100)} ${Math.floor(y/100)}`;
-}
-
-/* GPS 수신 */
-function getMyLocation(){
-  if(!navigator.geolocation){
-    alert("GPS를 지원하지 않는 기기입니다");
+/* ======================
+   GPS 수신
+====================== */
+function getLocation() {
+  if (!navigator.geolocation) {
+    alert("GPS 지원 안됨");
     return;
   }
 
-  result.textContent = "📡 위성 신호 수신 중...\n(야외에서 잠시 대기하세요)";
+  // 마지막 좌표 즉시 표시
+  const lastLat = localStorage.getItem("lastLat");
+  const lastLon = localStorage.getItem("lastLon");
+  if (lastLat && lastLon) {
+    processCoord(parseFloat(lastLat), parseFloat(lastLon));
+  }
 
   navigator.geolocation.getCurrentPosition(
-    pos=>{
+    pos => {
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
-      const acc = Math.round(pos.coords.accuracy);
 
-      const tm = proj4("WGS84","EPSG:5179",[lon,lat]);
-      const mgrsCode = mgrs.forward([lon,lat],5);
+      localStorage.setItem("lastLat", lat);
+      localStorage.setItem("lastLon", lon);
 
-      localStorage.setItem("lastLat",lat);
-      localStorage.setItem("lastLon",lon);
-
-      result.textContent =
-`📍 현재 위치 (GPS)
-
-WGS84 (DD)
-${lat.toFixed(6)}, ${lon.toFixed(6)}
-
-DMS
-${toDMS(lat)}
-${toDMS(lon)}
-
-TM / UTM-K
-E ${Math.floor(tm[0])}
-N ${Math.floor(tm[1])}
-
-국가지점번호
-${national(tm[0],tm[1])}
-
-MGRS
-${mgrsCode}
-
-GPS 정확도 ±${acc} m`;
+      processCoord(lat, lon);
     },
-    err=>{
-      alert("위치 수신 실패\n야외로 이동하세요");
-    },
+    err => alert("GPS 수신 실패"),
     {
       enableHighAccuracy:true,
-      timeout:20000,
-      maximumAge:0
+      timeout:30000,
+      maximumAge:60000
     }
   );
 }
 
-/* 마지막 위치 자동 표시 */
-window.onload=()=>{
-  const lat=localStorage.getItem("lastLat");
-  const lon=localStorage.getItem("lastLon");
-  if(lat && lon){
-    result.textContent =
-`📦 마지막 저장 위치
+/* ======================
+   좌표 처리
+====================== */
+function processCoord(lat, lon) {
+  document.getElementById("lat").innerText = lat.toFixed(6);
+  document.getElementById("lon").innerText = lon.toFixed(6);
+  document.getElementById("dms").innerText = toDMS(lat, lon);
 
-${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}
+  const utm = latLonToUTM(lat, lon);
+  document.getElementById("utm").innerText =
+    utm.zone + " " + utm.easting + " " + utm.northing;
 
-(오프라인에서도 사용 가능)`;
-  }
-};
+  const tm = latLonToTM(lat, lon);
+  document.getElementById("tm").innerText =
+    "X: " + tm.x + "  Y: " + tm.y;
 
-/* Service Worker */
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js");
+  document.getElementById("mgrs").innerText =
+    utm.zone + utm.band + " " +
+    utm.easting.toString().slice(0,3) + " " +
+    utm.northing.toString().slice(0,3);
+}
+
+/* ======================
+   도 → 도분초
+====================== */
+function dms(v) {
+  const deg = Math.floor(Math.abs(v));
+  const minFloat = (Math.abs(v) - deg) * 60;
+  const min = Math.floor(minFloat);
+  const sec = ((minFloat - min) * 60).toFixed(2);
+  return `${deg}° ${min}' ${sec}"`;
+}
+
+function toDMS(lat, lon) {
+  return `N ${dms(lat)} / E ${dms(lon)}`;
+}
+
+/* ======================
+   UTM 변환 (단순)
+====================== */
+function latLonToUTM(lat, lon) {
+  const zone = Math.floor((lon + 180) / 6) + 1;
+  const band = "CDEFGHJKLMNPQRSTUVWX"[Math.floor((lat + 80) / 8)];
+
+  const a = 6378137;
+  const k0 = 0.9996;
+
+  const latRad = lat * Math.PI / 180;
+  const lonRad = lon * Math.PI / 180;
+  const lonOrigin = (zone - 1) * 6 - 180 + 3;
+  const lonOriginRad = lonOrigin * Math.PI / 180;
+
+  const e = 0.081819191;
+  const N = a / Math.sqrt(1 - e * e * Math.sin(latRad) ** 2);
+  const T = Math.tan(latRad) ** 2;
+  const C = (e * e / (1 - e * e)) * Math.cos(latRad) ** 2;
+  const A = Math.cos(latRad) * (lonRad - lonOriginRad);
+
+  const M = a * (
+    (1 - e*e/4 - 3*e**4/64) * latRad
+  );
+
+  let easting = k0 * N * A + 500000;
+  let northing = k0 * M;
+  if (lat < 0) northing += 10000000;
+
+  return {
+    zone, band,
+    easting: Math.round(easting),
+    northing: Math.round(northing)
+  };
+}
+
+/* ======================
+   TM 변환 (중부원점 근사)
+====================== */
+function latLonToTM(lat, lon) {
+  const lat0 = 38;
+  const lon0 = 127;
+
+  const x = (lon - lon0) * 111320 * Math.cos(lat * Math.PI/180) + 200000;
+  const y = (lat - lat0) * 110540 + 500000;
+
+  return {
+    x: Math.round(x),
+    y: Math.round(y)
+  };
 }
 </script>
 
 </body>
 </html>
+
