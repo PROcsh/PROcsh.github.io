@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🆘 오프라인 GPS 좌표 변환</title>
+
+<link rel="manifest" href="./manifest.json">
+
+<!-- 좌표 변환 라이브러리 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.0/proj4.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mgrs/1.0.0/mgrs.min.js"></script>
+
+<style>
+body{
+  margin:0;
+  padding:20px;
+  font-family:system-ui, sans-serif;
+  background:#0f172a;
+  color:#fff;
+}
+h1{
+  text-align:center;
+  margin-bottom:16px;
+}
+.status{
+  text-align:center;
+  margin-bottom:12px;
+  color:#38bdf8;
+}
+.card{
+  background:#020617;
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:14px;
+}
+button{
+  width:100%;
+  padding:18px;
+  font-size:18px;
+  font-weight:700;
+  border:none;
+  border-radius:14px;
+  background:#22c55e;
+  color:#020617;
+}
+pre{
+  white-space:pre-wrap;
+  font-size:15px;
+  line-height:1.6;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🆘 오프라인 GPS 좌표 변환</h1>
+<div class="status" id="status">📡 GPS 대기중…</div>
+
+<div class="card">
+  <button onclick="getLocation()">📍 현재 위치 확인</button>
+</div>
+
+<div class="card">
+  <pre id="result">좌표 미수신</pre>
+</div>
+
+<script>
+/* ===============================
+   Service Worker 등록
+================================ */
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
+
+/* ===============================
+   EPSG:5179 (UTM-K)
+================================ */
+proj4.defs("EPSG:5179",
+  "+proj=tmerc +lat_0=38 +lon_0=127.5 +k=0.9996 " +
+  "+x_0=1000000 +y_0=2000000 +ellps=GRS80 +units=m +no_defs"
+);
+
+/* ===============================
+   유틸 함수
+================================ */
+function toDMS(d){
+  const D = Math.floor(d);
+  const M = Math.floor((d - D) * 60);
+  const S = (((d - D) * 60 - M) * 60).toFixed(2);
+  return `${D}° ${M}′ ${S}″`;
+}
+
+function wgs84ToUTMK(lat, lon){
+  const [x, y] = proj4("WGS84", "EPSG:5179", [lon, lat]);
+  return { x, y };
+}
+
+function nationalPoint(tm){
+  return `${Math.floor(tm.x / 100)} ${Math.floor(tm.y / 100)}`;
+}
+
+/* ===============================
+   GPS 수신
+================================ */
+function getLocation(){
+  const status = document.getElementById("status");
+  status.textContent = "📡 위성 수신중…";
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      const acc = pos.coords.accuracy;
+
+      status.textContent = `✅ 수신 완료 (정확도 ±${Math.round(acc)}m)`;
+      convert(lat, lon);
+    },
+    err => {
+      status.textContent = "❌ GPS 수신 실패";
+      alert("GPS 권한 또는 수신 상태를 확인하세요.");
+    },
+    {
+      enableHighAccuracy:true,
+      timeout:30000,
+      maximumAge:0
+    }
+  );
+}
+
+/* ===============================
+   좌표 변환
+================================ */
+function convert(lat, lon){
+  const tm = wgs84ToUTMK(lat, lon);
+  const mgrsCode = mgrs.forward([lon, lat], 5);
+
+  document.getElementById("result").textContent =
+`📌 WGS84 (도좌표)
+DD : ${lat.toFixed(6)}, ${lon.toFixed(6)}
+
+📐 도분초 (DMS)
+위도 : ${toDMS(lat)}
+경도 : ${toDMS(lon)}
+
+🧭 UTM-K (EPSG:5179)
+Easting  : ${Math.floor(tm.x)}
+Northing : ${Math.floor(tm.y)}
+
+🏔 국가지점번호 (100m)
+${nationalPoint(tm)}
+
+🎖 군사좌표 (MGRS)
+${mgrsCode}`;
+}
+</script>
+
+</body>
+</html>
